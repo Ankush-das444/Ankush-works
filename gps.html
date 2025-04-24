@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GPS Speedometer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 50px;
+      background: #f4f4f4;
+    }
+    .speed {
+      font-size: 48px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>GPS Speedometer</h1>
+  <div class="speed" id="speed">0.00 km/h</div>
+
+  <script>
+    let lastPosition = null;
+
+    function toRad(value) {
+      return value * Math.PI / 180;
+    }
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Earth radius in meters
+      const φ1 = toRad(lat1);
+      const φ2 = toRad(lat2);
+      const Δφ = toRad(lat2 - lat1);
+      const Δλ = toRad(lon2 - lon1);
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      return R * c; // in meters
+    }
+
+    function updateSpeed(position) {
+      const currentTime = position.timestamp;
+      const currentCoords = position.coords;
+
+      if (lastPosition) {
+        const prevCoords = lastPosition.coords;
+        const timeDiff = (currentTime - lastPosition.timestamp) / 1000; // seconds
+
+        if (timeDiff > 0) {
+          const distance = getDistance(
+            prevCoords.latitude,
+            prevCoords.longitude,
+            currentCoords.latitude,
+            currentCoords.longitude
+          );
+
+          const speedMps = distance / timeDiff; // meters per second
+          const speedKmph = (speedMps * 3.6).toFixed(2); // km/h
+
+          document.getElementById('speed').textContent = `${speedKmph} km/h`;
+        }
+      }
+
+      lastPosition = position;
+    }
+
+    function handleError(error) {
+      alert('Error getting location: ' + error.message);
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition(updateSpeed, handleError, {
+        enableHighAccuracy: true,
+        maximumAge: 1000
+      });
+    } else {
+      alert("Geolocation is not supported on this device.");
+    }
+  </script>
+</body>
+</html>

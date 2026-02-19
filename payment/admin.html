@@ -2,50 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin | Manage Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #000000;
-            --bg-gradient: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
-            --glass-bg: rgba(255, 255, 255, 0.9);
+            --bg-color: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --border-color: #CBD5E1;
+            --primary: #0F172A;
+            --success: #10B981;
+            --danger: #EF4444;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg-gradient); min-height: 100vh; padding: 24px; color: #1F2937; }
+        
+        /* Mobile optimized body padding */
+        body { background: var(--bg-color); min-height: 100vh; padding: 16px; color: var(--text-main); }
         
         .header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
-        .header h1 { font-size: 28px; font-weight: 700; color: #fff; }
+        .header h1 { font-size: 24px; font-weight: 700; }
 
-        .dashboard { display: grid; gap: 20px; max-width: 500px; margin: 0 auto; }
+        .dashboard { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin: 0 auto; }
         
         .admin-card {
-            background: var(--glass-bg); border-radius: 12px; padding: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; gap: 12px;
+            background: var(--card-bg); border-radius: 12px; padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+            display: flex; flex-direction: column; gap: 12px;
         }
 
-        .admin-title { font-weight: 700; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid #eee; padding-bottom: 8px;}
-        .item-title { font-weight: 600; font-size: 16px; color: #374151;}
+        .admin-title { font-weight: 700; font-size: 18px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
+        .item-title { font-weight: 600; font-size: 16px; color: var(--primary); }
         
-        .input-group { display: flex; flex-direction: column; gap: 10px; }
-        .row { display: flex; gap: 10px; }
+        /* Inputs strictly stacked for mobile */
+        .input-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         
         input, select { 
-            padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; 
-            font-size: 14px; outline: none; flex: 1; font-family: 'Inter', sans-serif;
-            background: #fff;
+            width: 100%;
+            padding: 14px; /* Larger touch target */
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            font-size: 16px; /* 16px prevents iOS auto-zoom on inputs */
+            outline: none; background: #F8FAFC;
         }
-        input:focus, select:focus { border-color: var(--primary); }
+        input:focus, select:focus { border-color: var(--primary); background: #fff; }
         
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%;}
-        .btn-update { background: #10B981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;}
-        .btn-delete { background: #EF4444; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;}
+        /* Button layout for mobile */
+        .btn { padding: 14px; border-radius: 8px; font-weight: 600; font-size: 16px; border: none; cursor: pointer; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-save { background: var(--success); color: white; }
+        .btn-delete { background: white; color: var(--danger); border: 1px solid var(--danger); margin-top: 4px;}
         
         #toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #10B981; color: white; padding: 12px 24px; border-radius: 30px;
-            font-weight: 600; display: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); z-index: 100;
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 14px 24px; border-radius: 30px;
+            font-weight: 600; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -57,28 +70,24 @@
 
     <div class="dashboard">
         <div class="admin-card">
-            <div class="admin-title">➕ Create New Entry</div>
+            <div class="admin-title">➕ Create New</div>
             <div class="input-group">
-                <input type="text" id="new-title" placeholder="Title (e.g., Electricity, Vi SIM)">
-                <input type="text" id="new-desc" placeholder="Details (Number / Acc ID)">
-                <div class="row">
-                    <input type="number" id="new-amount" placeholder="Amount (₹)">
-                    <input type="text" id="new-date" placeholder="Due Date (e.g., 24 Oct)">
-                </div>
-                <div class="row">
-                    <select id="new-category">
-                        <option value="electricity">Electricity</option>
-                        <option value="mobile">Mobile</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <input type="text" id="new-link" placeholder="Paste Payment Link Here">
-                <button class="btn-primary" onclick="addBill()">Add to Dashboard</button>
+                <input type="text" id="new-title" placeholder="Title (e.g., WBSEDCL, Vi)">
+                <input type="text" id="new-desc" placeholder="Phone No. / Acc ID">
+                <input type="number" id="new-amount" placeholder="Amount (₹)">
+                <input type="text" id="new-date" placeholder="Due Date (e.g., 24 Oct)">
+                <select id="new-category">
+                    <option value="electricity">Electricity</option>
+                    <option value="mobile">Mobile</option>
+                    <option value="other">Other</option>
+                </select>
+                <input type="text" id="new-link" placeholder="Paste App Payment Link">
+                <button class="btn btn-primary" onclick="addBill()">Add to Dashboard</button>
             </div>
         </div>
 
         <div id="admin-container" style="display: flex; flex-direction: column; gap: 16px;">
-            <p style="text-align:center; color:white;">Loading database...</p>
+            <p style="text-align:center; color:#64748B;">Loading database...</p>
         </div>
     </div>
 
@@ -112,25 +121,21 @@
                 card.innerHTML = `
                     <div class="item-title">${bill.title}</div>
                     <div class="input-group">
-                        <div class="row">
-                            <input type="number" id="amt-${bill.id}" value="${bill.amount}" placeholder="Amount">
-                            <select id="status-${bill.id}">
-                                <option value="pending" ${bill.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="paid" ${bill.status === 'paid' ? 'selected' : ''}>Paid</option>
-                            </select>
-                        </div>
-                        <input type="text" id="link-${bill.id}" value="${bill.payment_link || ''}" placeholder="Update Payment Link">
-                        <div class="row">
-                            <button class="btn-update" onclick="updateBill('${bill.id}')">Save</button>
-                            <button class="btn-delete" onclick="deleteBill('${bill.id}')">Delete</button>
-                        </div>
+                        <input type="number" id="amt-${bill.id}" value="${bill.amount}" placeholder="Amount (₹)">
+                        <select id="status-${bill.id}">
+                            <option value="pending" ${bill.status === 'pending' ? 'selected' : ''}>Status: Pending</option>
+                            <option value="paid" ${bill.status === 'paid' ? 'selected' : ''}>Status: Paid</option>
+                        </select>
+                        <input type="text" id="link-${bill.id}" value="${bill.payment_link || ''}" placeholder="Update Link">
+                        
+                        <button class="btn btn-save" onclick="updateBill('${bill.id}')">Save Changes</button>
+                        <button class="btn btn-delete" onclick="deleteBill('${bill.id}')">Delete Entry</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // CREATE
         window.addBill = async function() {
             const title = document.getElementById('new-title').value;
             const desc = document.getElementById('new-desc').value;
@@ -150,17 +155,11 @@
 
             if (!error) {
                 showToast("Added Successfully!");
-                // Clear inputs
-                document.getElementById('new-title').value = '';
-                document.getElementById('new-desc').value = '';
-                document.getElementById('new-amount').value = '';
-                document.getElementById('new-date').value = '';
-                document.getElementById('new-link').value = '';
+                document.querySelectorAll('.input-group input').forEach(input => input.value = '');
                 loadAdminPanel();
             } else { alert("Error adding bill!"); }
         }
 
-        // UPDATE
         window.updateBill = async function(id) {
             const newAmount = document.getElementById(`amt-${id}`).value;
             const newStatus = document.getElementById(`status-${id}`).value;
@@ -170,19 +169,16 @@
                 amount: newAmount, status: newStatus, payment_link: newLink, last_updated: new Date().toISOString()
             }).eq('id', id);
 
-            if (!error) { showToast("Updated Successfully!"); } 
-            else { alert("Error updating!"); }
+            if (!error) { showToast("Updated!"); } else { alert("Error updating!"); }
         }
 
-        // DELETE
         window.deleteBill = async function(id) {
-            if (confirm("Are you sure you want to completely remove this entry?")) {
+            if (confirm("Remove this entry completely?")) {
                 const { error } = await supabase.from('family_bills').delete().eq('id', id);
                 if (!error) { showToast("Deleted!"); loadAdminPanel(); }
             }
         }
 
-        // Initialize
         loadAdminPanel();
     </script>
 </body>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Hub | Bills</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --bg-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.4);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
+        body { background: var(--bg-gradient); min-height: 100vh; padding: 24px; color: #1F2937; }
+
+        .header { text-align: center; margin-bottom: 32px; padding-top: 20px; }
+        .header h1 { font-size: 28px; font-weight: 700; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header p { color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 4px; }
+
+        .dashboard { display: grid; gap: 20px; max-width: 500px; margin: 0 auto; }
+
+        .card {
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            display: flex; flex-direction: column; gap: 12px; transition: all 0.3s ease;
+        }
+        
+        .card.paid-card { opacity: 0.6; filter: grayscale(40%); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .title-group { display: flex; flex-direction: column; gap: 4px; }
+        .card-title { font-weight: 600; font-size: 18px; color: #111827; }
+        .card-desc { font-size: 13px; color: #6B7280; font-weight: 500; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; height: fit-content; }
+        .badge.pending { background: #FEF3C7; color: #D97706; }
+        .badge.paid { background: #D1FAE5; color: #059669; }
+
+        .amount { font-size: 32px; font-weight: 700; color: #111827; letter-spacing: -0.5px; margin: 8px 0; }
+
+        .btn {
+            display: block; width: 100%; padding: 14px; text-align: center;
+            border-radius: 12px; font-weight: 600; font-size: 16px;
+            text-decoration: none; border: none; cursor: pointer; transition: opacity 0.2s ease;
+        }
+        
+        .btn-pay { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-pay:hover { opacity: 0.9; }
+        .btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; pointer-events: none; }
+
+        .loader { text-align: center; color: white; font-weight: 600; padding: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Family Hub</h1>
+        <p>Monthly Utilities & Recharges</p>
+    </div>
+
+    <div class="dashboard" id="bills-container">
+        <div class="loader">Loading...</div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        // Your specific Supabase credentials inserted here
+        const supabase = createClient(
+            'https://hzwjzpwhjpkwbnevylcr.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
+        );
+
+        async function loadBills() {
+            const container = document.getElementById('bills-container');
+            const { data, error } = await supabase.from('family_bills').select('*').order('status', { ascending: false }).order('last_updated', { ascending: false });
+
+            if (error) {
+                container.innerHTML = `<div class="loader">Error loading data.</div>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="loader">All clear! No bills added yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = ''; 
+
+            data.forEach(bill => {
+                const isPending = bill.status === 'pending';
+                const statusText = isPending ? 'Pending' : 'Paid ✅';
+                const cardClass = isPending ? 'card' : 'card paid-card';
+                const customLink = bill.payment_link ? bill.payment_link : '#';
+                
+                // Formats the due date and description to show beautifully if they exist
+                const extraDetails = `
+                    ${bill.description ? `<span>No/ID: ${bill.description}</span>` : ''}
+                    ${bill.due_date ? `<span> • Due: ${bill.due_date}</span>` : ''}
+                `;
+
+                const card = document.createElement('div');
+                card.className = cardClass;
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="title-group">
+                            <span class="card-title">${bill.category === 'electricity' ? '⚡' : (bill.category === 'mobile' ? '📱' : '💳')} ${bill.title}</span>
+                            <div class="card-desc">${extraDetails}</div>
+                        </div>
+                        <span class="badge ${isPending ? 'pending' : 'paid'}">${statusText}</span>
+                    </div>
+                    <div class="amount">₹${bill.amount}</div>
+                    <a href="${isPending ? customLink : '#'}" class="btn ${isPending ? 'btn-pay' : 'btn-disabled'}">
+                        ${isPending ? 'Pay via Custom Link' : 'Already Settled'}
+                    </a>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        loadBills();
+    </script>
+</body>
+</html>

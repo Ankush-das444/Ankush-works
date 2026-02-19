@@ -2,58 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Hub | Bills</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Family Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4F46E5;
-            --bg-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.4);
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-main: #F8FAFC;
+            --text-sub: #94A3B8;
+            --accent: #3B82F6;
+            --success: #10B981;
+            --pending: #F59E0B;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
-        body { background: var(--bg-gradient); min-height: 100vh; padding: 24px; color: #1F2937; }
+        body { background: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px 20px 80px 20px; }
 
-        .header { text-align: center; margin-bottom: 32px; padding-top: 20px; }
-        .header h1 { font-size: 28px; font-weight: 700; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header p { color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 4px; }
+        .header { margin-bottom: 24px; padding-top: 10px; }
+        .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+        .header p { color: var(--text-sub); font-size: 14px; margin-top: 4px; }
 
-        .dashboard { display: grid; gap: 20px; max-width: 500px; margin: 0 auto; }
+        .dashboard { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin: 0 auto; }
 
         .card {
-            background: var(--glass-bg); backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border); border-radius: 16px;
-            padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-            display: flex; flex-direction: column; gap: 12px; transition: all 0.3s ease;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: opacity 0.3s;
         }
         
-        .card.paid-card { opacity: 0.6; filter: grayscale(40%); }
+        .card.paid-card { opacity: 0.5; filter: grayscale(50%); }
         
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .title-group { display: flex; flex-direction: column; gap: 4px; }
-        .card-title { font-weight: 600; font-size: 18px; color: #111827; }
-        .card-desc { font-size: 13px; color: #6B7280; font-weight: 500; }
+        .card-title { font-weight: 600; font-size: 17px; }
+        .card-desc { font-size: 13px; color: var(--text-sub); }
         
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; height: fit-content; }
-        .badge.pending { background: #FEF3C7; color: #D97706; }
-        .badge.paid { background: #D1FAE5; color: #059669; }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .badge.pending { background: rgba(245, 158, 11, 0.2); color: var(--pending); }
+        .badge.paid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
 
-        .amount { font-size: 32px; font-weight: 700; color: #111827; letter-spacing: -0.5px; margin: 8px 0; }
+        .amount { font-size: 28px; font-weight: 700; margin: 4px 0; }
 
         .btn {
             display: block; width: 100%; padding: 14px; text-align: center;
-            border-radius: 12px; font-weight: 600; font-size: 16px;
-            text-decoration: none; border: none; cursor: pointer; transition: opacity 0.2s ease;
+            border-radius: 12px; font-weight: 600; font-size: 15px;
+            text-decoration: none; border: none; cursor: pointer; transition: 0.2s;
         }
         
-        .btn-pay { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
-        .btn-pay:hover { opacity: 0.9; }
-        .btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; pointer-events: none; }
+        .btn-pay { background: var(--accent); color: white; }
+        .btn-pay:active { transform: scale(0.98); }
+        .btn-disabled { background: #334155; color: #64748B; pointer-events: none; }
 
-        .loader { text-align: center; color: white; font-weight: 600; padding: 40px; }
+        /* Floating Refresh Button */
+        .fab {
+            position: fixed; bottom: 24px; right: 24px;
+            background: var(--accent); color: white;
+            width: 56px; height: 56px; border-radius: 28px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            cursor: pointer; border: none; z-index: 1000;
+        }
+        .fab:active { transform: scale(0.95); }
+        .spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .loader { text-align: center; color: var(--text-sub); padding: 40px; }
     </style>
 </head>
 <body>
@@ -67,16 +85,17 @@
         <div class="loader">Loading...</div>
     </div>
 
+    <button class="fab" id="refresh-btn" onclick="triggerRefresh()">🔄</button>
+
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-        // Your specific Supabase credentials inserted here
         const supabase = createClient(
             'https://hzwjzpwhjpkwbnevylcr.supabase.co', 
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
         );
 
-        async function loadBills() {
+        window.loadBills = async function() {
             const container = document.getElementById('bills-container');
             const { data, error } = await supabase.from('family_bills').select('*').order('status', { ascending: false }).order('last_updated', { ascending: false });
 
@@ -86,7 +105,7 @@
             }
 
             if (data.length === 0) {
-                container.innerHTML = `<div class="loader">All clear! No bills added yet.</div>`;
+                container.innerHTML = `<div class="loader">All clear! No pending items.</div>`;
                 return;
             }
 
@@ -98,9 +117,8 @@
                 const cardClass = isPending ? 'card' : 'card paid-card';
                 const customLink = bill.payment_link ? bill.payment_link : '#';
                 
-                // Formats the due date and description to show beautifully if they exist
                 const extraDetails = `
-                    ${bill.description ? `<span>No/ID: ${bill.description}</span>` : ''}
+                    ${bill.description ? `<span>${bill.description}</span>` : ''}
                     ${bill.due_date ? `<span> • Due: ${bill.due_date}</span>` : ''}
                 `;
 
@@ -121,6 +139,14 @@
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // Refresh logic with visual spin
+        window.triggerRefresh = async function() {
+            const btn = document.getElementById('refresh-btn');
+            btn.classList.add('spinning');
+            await window.loadBills();
+            setTimeout(() => btn.classList.remove('spinning'), 500); // Stop spinning
         }
 
         loadBills();

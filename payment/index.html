@@ -7,58 +7,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --text-main: #F8FAFC;
-            --text-sub: #94A3B8;
-            --accent: #3B82F6;
-            --success: #10B981;
-            --pending: #F59E0B;
+            --bg-color: #0F172A; --card-bg: #1E293B; --text-main: #F8FAFC; 
+            --text-sub: #94A3B8; --accent: #3B82F6; --success: #10B981; --pending: #F59E0B;
         }
-        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        
         body { background: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px 20px 80px 20px; }
-
         .header { margin-bottom: 24px; padding-top: 10px; }
         .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
         .header p { color: var(--text-sub); font-size: 14px; margin-top: 4px; }
-
         .dashboard { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin: 0 auto; }
-
         .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
+            background: var(--card-bg); border-radius: 16px; padding: 20px;
             display: flex; flex-direction: column; gap: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: opacity 0.3s;
+            border: 1px solid rgba(255,255,255,0.05); transition: opacity 0.3s;
         }
-        
         .card.paid-card { opacity: 0.5; filter: grayscale(50%); }
-        
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .title-group { display: flex; flex-direction: column; gap: 4px; }
-        .card-title { font-weight: 600; font-size: 17px; }
+        .card-title { font-weight: 600; font-size: 17px; display: flex; align-items: center; gap: 8px; }
         .card-desc { font-size: 13px; color: var(--text-sub); }
-        
         .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
         .badge.pending { background: rgba(245, 158, 11, 0.2); color: var(--pending); }
         .badge.paid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-
         .amount { font-size: 28px; font-weight: 700; margin: 4px 0; }
-
         .btn {
             display: block; width: 100%; padding: 14px; text-align: center;
             border-radius: 12px; font-weight: 600; font-size: 15px;
             text-decoration: none; border: none; cursor: pointer; transition: 0.2s;
         }
-        
         .btn-pay { background: var(--accent); color: white; }
         .btn-pay:active { transform: scale(0.98); }
         .btn-disabled { background: #334155; color: #64748B; pointer-events: none; }
-
-        /* Floating Refresh Button */
         .fab {
             position: fixed; bottom: 24px; right: 24px;
             background: var(--accent); color: white;
@@ -70,21 +49,17 @@
         .fab:active { transform: scale(0.95); }
         .spinning { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
         .loader { text-align: center; color: var(--text-sub); padding: 40px; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <h1>Family Hub</h1>
         <p>Monthly Utilities & Recharges</p>
     </div>
-
     <div class="dashboard" id="bills-container">
         <div class="loader">Loading...</div>
     </div>
-
     <button class="fab" id="refresh-btn" onclick="triggerRefresh()">🔄</button>
 
     <script type="module">
@@ -99,15 +74,8 @@
             const container = document.getElementById('bills-container');
             const { data, error } = await supabase.from('family_bills').select('*').order('status', { ascending: false }).order('last_updated', { ascending: false });
 
-            if (error) {
-                container.innerHTML = `<div class="loader">Error loading data.</div>`;
-                return;
-            }
-
-            if (data.length === 0) {
-                container.innerHTML = `<div class="loader">All clear! No pending items.</div>`;
-                return;
-            }
+            if (error) { container.innerHTML = `<div class="loader">Error loading data.</div>`; return; }
+            if (data.length === 0) { container.innerHTML = `<div class="loader">All clear! No pending items.</div>`; return; }
 
             container.innerHTML = ''; 
 
@@ -116,6 +84,13 @@
                 const statusText = isPending ? 'Pending' : 'Paid ✅';
                 const cardClass = isPending ? 'card' : 'card paid-card';
                 const customLink = bill.payment_link ? bill.payment_link : '#';
+                
+                // Fetch the dynamic icon from your IconFlow API (White for Dark Theme)
+                let iconQuery = 'credit-card';
+                if (bill.category === 'electricity') iconQuery = 'zap';
+                if (bill.category === 'mobile') iconQuery = 'smartphone';
+                
+                const iconFlowUrl = `https://icon-flow-pi.vercel.app/api/render?q=${iconQuery}&color=FFFFFF&size=20`;
                 
                 const extraDetails = `
                     ${bill.description ? `<span>${bill.description}</span>` : ''}
@@ -127,7 +102,7 @@
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="title-group">
-                            <span class="card-title">${bill.category === 'electricity' ? '⚡' : (bill.category === 'mobile' ? '📱' : '💳')} ${bill.title}</span>
+                            <span class="card-title"><img src="${iconFlowUrl}" alt="icon" width="20" height="20"> ${bill.title}</span>
                             <div class="card-desc">${extraDetails}</div>
                         </div>
                         <span class="badge ${isPending ? 'pending' : 'paid'}">${statusText}</span>
@@ -141,12 +116,11 @@
             });
         }
 
-        // Refresh logic with visual spin
         window.triggerRefresh = async function() {
             const btn = document.getElementById('refresh-btn');
             btn.classList.add('spinning');
             await window.loadBills();
-            setTimeout(() => btn.classList.remove('spinning'), 500); // Stop spinning
+            setTimeout(() => btn.classList.remove('spinning'), 500);
         }
 
         loadBills();

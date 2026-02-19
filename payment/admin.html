@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Manage Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #000000;
+            --bg-gradient: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-gradient); min-height: 100vh; padding: 24px; color: #1F2937; }
+        
+        .header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
+        .header h1 { font-size: 28px; font-weight: 700; color: #fff; }
+
+        .dashboard { display: grid; gap: 20px; max-width: 500px; margin: 0 auto; }
+        
+        .admin-card {
+            background: var(--glass-bg); border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .admin-title { font-weight: 700; font-size: 18px; margin-bottom: 8px; border-bottom: 2px solid #eee; padding-bottom: 8px;}
+        .item-title { font-weight: 600; font-size: 16px; color: #374151;}
+        
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        .row { display: flex; gap: 10px; }
+        
+        input, select { 
+            padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; 
+            font-size: 14px; outline: none; flex: 1; font-family: 'Inter', sans-serif;
+            background: #fff;
+        }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%;}
+        .btn-update { background: #10B981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;}
+        .btn-delete { background: #EF4444; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;}
+        
+        #toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #10B981; color: white; padding: 12px 24px; border-radius: 30px;
+            font-weight: 600; display: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Command Center</h1>
+    </div>
+
+    <div class="dashboard">
+        <div class="admin-card">
+            <div class="admin-title">➕ Create New Entry</div>
+            <div class="input-group">
+                <input type="text" id="new-title" placeholder="Title (e.g., Electricity, Vi SIM)">
+                <input type="text" id="new-desc" placeholder="Details (Number / Acc ID)">
+                <div class="row">
+                    <input type="number" id="new-amount" placeholder="Amount (₹)">
+                    <input type="text" id="new-date" placeholder="Due Date (e.g., 24 Oct)">
+                </div>
+                <div class="row">
+                    <select id="new-category">
+                        <option value="electricity">Electricity</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <input type="text" id="new-link" placeholder="Paste Payment Link Here">
+                <button class="btn-primary" onclick="addBill()">Add to Dashboard</button>
+            </div>
+        </div>
+
+        <div id="admin-container" style="display: flex; flex-direction: column; gap: 16px;">
+            <p style="text-align:center; color:white;">Loading database...</p>
+        </div>
+    </div>
+
+    <div id="toast">Action Successful!</div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabase = createClient(
+            'https://hzwjzpwhjpkwbnevylcr.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
+        );
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        window.loadAdminPanel = async function() {
+            const container = document.getElementById('admin-container');
+            const { data, error } = await supabase.from('family_bills').select('*').order('last_updated', { ascending: false });
+
+            if (error) return;
+            container.innerHTML = '';
+
+            data.forEach(bill => {
+                const card = document.createElement('div');
+                card.className = 'admin-card';
+                card.innerHTML = `
+                    <div class="item-title">${bill.title}</div>
+                    <div class="input-group">
+                        <div class="row">
+                            <input type="number" id="amt-${bill.id}" value="${bill.amount}" placeholder="Amount">
+                            <select id="status-${bill.id}">
+                                <option value="pending" ${bill.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="paid" ${bill.status === 'paid' ? 'selected' : ''}>Paid</option>
+                            </select>
+                        </div>
+                        <input type="text" id="link-${bill.id}" value="${bill.payment_link || ''}" placeholder="Update Payment Link">
+                        <div class="row">
+                            <button class="btn-update" onclick="updateBill('${bill.id}')">Save</button>
+                            <button class="btn-delete" onclick="deleteBill('${bill.id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // CREATE
+        window.addBill = async function() {
+            const title = document.getElementById('new-title').value;
+            const desc = document.getElementById('new-desc').value;
+            const amount = document.getElementById('new-amount').value;
+            const date = document.getElementById('new-date').value;
+            const category = document.getElementById('new-category').value;
+            const link = document.getElementById('new-link').value;
+
+            if (!title || !amount) {
+                alert("Please enter at least a Title and Amount.");
+                return;
+            }
+
+            const { error } = await supabase.from('family_bills').insert([{
+                title: title, description: desc, amount: amount, due_date: date, category: category, payment_link: link, status: 'pending'
+            }]);
+
+            if (!error) {
+                showToast("Added Successfully!");
+                // Clear inputs
+                document.getElementById('new-title').value = '';
+                document.getElementById('new-desc').value = '';
+                document.getElementById('new-amount').value = '';
+                document.getElementById('new-date').value = '';
+                document.getElementById('new-link').value = '';
+                loadAdminPanel();
+            } else { alert("Error adding bill!"); }
+        }
+
+        // UPDATE
+        window.updateBill = async function(id) {
+            const newAmount = document.getElementById(`amt-${id}`).value;
+            const newStatus = document.getElementById(`status-${id}`).value;
+            const newLink = document.getElementById(`link-${id}`).value;
+
+            const { error } = await supabase.from('family_bills').update({ 
+                amount: newAmount, status: newStatus, payment_link: newLink, last_updated: new Date().toISOString()
+            }).eq('id', id);
+
+            if (!error) { showToast("Updated Successfully!"); } 
+            else { alert("Error updating!"); }
+        }
+
+        // DELETE
+        window.deleteBill = async function(id) {
+            if (confirm("Are you sure you want to completely remove this entry?")) {
+                const { error } = await supabase.from('family_bills').delete().eq('id', id);
+                if (!error) { showToast("Deleted!"); loadAdminPanel(); }
+            }
+        }
+
+        // Initialize
+        loadAdminPanel();
+    </script>
+</body>
+</html>

@@ -1,22 +1,18 @@
 export default function handler(req, res) {
-    // 1. Grab parameters from the URL (defaults to 0.00 and 'Payment' if missing)
     const amount = req.query.am || '0.00';
     const note = req.query.tn || 'Family Hub Payment';
     
-    // 2. YOUR EXACT BANK DETAILS
+    // YOUR EXACT BANK DETAILS
     const UPI_ID = "ankushz0@ptyes"; 
     const PAYEE_NAME = "Ankush Das";
 
-    // Core parameter string
     const params = `pa=${UPI_ID}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${amount}&tn=${encodeURIComponent(note)}&cu=INR`;
 
-    // 3. Android WebView Intent URIs (Forces the phone to open the native apps)
     const gpayIntent = `intent://upi/pay?${params}#Intent;scheme=tez;package=com.google.android.apps.nbu.paisa.user;end;`;
     const phonepeIntent = `intent://pay?${params}#Intent;scheme=phonepe;package=com.phonepe.app;end;`;
     const paytmIntent = `intent://pay?${params}#Intent;scheme=paytmmp;package=net.one97.paytm;end;`;
     const genericUpiIntent = `intent://pay?${params}#Intent;scheme=upi;end;`;
 
-    // 4. Your custom UI injected with the dynamic variables
     const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -42,16 +38,7 @@ export default function handler(req, res) {
                             "card-light": "#FFFFFF", 
                             "surface-dark": "#1F2937", 
                             "surface-light": "#F9FAFB",
-                        },
-                        fontFamily: {
-                            display: ["Inter", "sans-serif"],
-                            sans: ["Inter", "sans-serif"],
-                        },
-                        borderRadius: {
-                            DEFAULT: "12px",
-                            "xl": "16px",
-                            "2xl": "20px",
-                        },
+                        }
                     },
                 },
             };
@@ -86,7 +73,6 @@ export default function handler(req, res) {
                 </h2>
                 
                 <div class="space-y-3">
-                    
                     <a href="${gpayIntent}" class="w-full group relative flex items-center p-4 bg-surface-light dark:bg-surface-dark hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl transition-all duration-200 active:scale-[0.98] cursor-pointer">
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm p-1 mr-4 border border-gray-100">
                             <svg class="w-6 h-6" viewBox="0 0 24 24">
@@ -121,7 +107,6 @@ export default function handler(req, res) {
                             <span class="material-icons-round">chevron_right</span>
                         </span>
                     </a>
-                    
                 </div>
                 
                 <div class="relative py-6 flex items-center justify-center">
@@ -136,6 +121,12 @@ export default function handler(req, res) {
                 <a href="${genericUpiIntent}" class="w-full bg-primary hover:bg-blue-700 text-white font-semibold py-3.5 rounded-xl shadow-md transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
                     Other UPI Apps
                 </a>
+                
+                <button onclick="window.history.back()" class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-md transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
+                    <span class="material-icons-round">check_circle</span>
+                    I've Completed the Payment
+                </button>
+
             </div>
         </div>
 
@@ -149,7 +140,6 @@ export default function handler(req, res) {
         </footer>
 
         <script>
-            // Check local storage or system preference
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark')
             } else {

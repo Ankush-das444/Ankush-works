@@ -1,92 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Family Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Family Hub Dashboard</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0F172A", accent: "#3B82F6", 
+                        "background-light": "#F8FAFC", "background-dark": "#0B1120", 
+                        "card-light": "#FFFFFF", "card-dark": "#1E293B"
+                    },
+                    fontFamily: { display: ["Inter", "sans-serif"] },
+                },
+            },
+        };
+    </script>
     <style>
-        :root {
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --text-main: #F8FAFC;
-            --text-sub: #94A3B8;
-            --accent: #3B82F6;
-            --success: #10B981;
-            --pending: #F59E0B;
-        }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        
-        body { background: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px 20px 80px 20px; }
-
-        .header { margin-bottom: 24px; padding-top: 10px; }
-        .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
-        .header p { color: var(--text-sub); font-size: 14px; margin-top: 4px; }
-
-        .dashboard { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin: 0 auto; }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex; flex-direction: column; gap: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: opacity 0.3s;
-        }
-        
-        .card.paid-card { opacity: 0.5; filter: grayscale(50%); }
-        
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .title-group { display: flex; flex-direction: column; gap: 4px; }
-        .card-title { font-weight: 600; font-size: 17px; display: flex; align-items: center; gap: 8px; }
-        .card-desc { font-size: 13px; color: var(--text-sub); }
-        
-        .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; height: fit-content; }
-        .badge.pending { background: rgba(245, 158, 11, 0.2); color: var(--pending); }
-        .badge.paid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-
-        .amount { font-size: 28px; font-weight: 700; margin: 4px 0; }
-
-        .btn {
-            display: block; width: 100%; padding: 14px; text-align: center;
-            border-radius: 12px; font-weight: 600; font-size: 15px;
-            text-decoration: none; border: none; cursor: pointer; transition: 0.2s;
-        }
-        
-        .btn-pay { background: var(--accent); color: white; }
-        .btn-pay:active { transform: scale(0.98); }
-        .btn-disabled { background: #334155; color: #64748B; pointer-events: none; }
-
-        .fab {
-            position: fixed; bottom: 24px; right: 24px;
-            background: var(--accent); color: white;
-            width: 56px; height: 56px; border-radius: 28px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-            cursor: pointer; border: none; z-index: 1000;
-        }
-        .fab:active { transform: scale(0.95); }
-        .spinning img { animation: spin 1s linear infinite; }
+        body { transition: background-color 0.3s ease, color 0.3s ease; min-height: 100vh; }
+        ::-webkit-scrollbar { display: none; }
+        .spin-anim { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .loader { text-align: center; color: var(--text-sub); padding: 40px; }
+        body.modal-open { overflow: hidden; }
+        .compartment-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .compartment-content.open { max-height: 800px; }
+        .chevron { transition: transform 0.3s ease; }
+        .chevron.rotated { transform: rotate(180deg); }
     </style>
 </head>
-<body>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display min-h-screen flex flex-col antialiased">
+    
+    <header class="px-6 py-6 flex justify-between items-start shrink-0 sticky top-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md z-40 border-b border-slate-200 dark:border-slate-800">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Family Hub</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Utility & Recharge Center</p>
+        </div>
+        <div class="flex items-center gap-2 mt-1">
+            <button class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" onclick="manualRefresh()">
+                <span id="refresh-icon" class="material-icons-round text-xl">refresh</span>
+            </button>
+            <button class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+                <span class="material-icons-round text-xl">brightness_4</span>
+            </button>
+        </div>
+    </header>
 
-    <div class="header">
-        <h1>Family Hub</h1>
-        <p>Monthly Utilities & Recharges</p>
+    <main class="flex-1 px-4 py-6 overflow-y-auto relative flex flex-col gap-5 max-w-lg w-full mx-auto">
+        
+        <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="p-5 flex justify-between items-center cursor-pointer bg-blue-50 dark:bg-blue-900/10" onclick="toggleCompartment('recharge-content', 'recharge-chevron')">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <span class="material-icons-round text-2xl">smartphone</span>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Mobile Recharges</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="recharge-count">Loading...</p>
+                    </div>
+                </div>
+                <span id="recharge-chevron" class="chevron material-icons-round text-slate-400">expand_more</span>
+            </div>
+            <div id="recharge-content" class="compartment-content">
+                <div class="p-5 flex flex-col gap-3 bg-white dark:bg-card-dark" id="recharge-list"></div>
+            </div>
+        </div>
+
+        <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="p-5 flex justify-between items-center cursor-pointer bg-yellow-50 dark:bg-yellow-900/10" onclick="toggleCompartment('elec-content', 'elec-chevron')">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-center">
+                        <span class="material-icons-round text-2xl">bolt</span>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Electricity Bill</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">WBSEDCL Prepaid</p>
+                    </div>
+                </div>
+                <span id="elec-chevron" class="chevron material-icons-round text-slate-400">expand_more</span>
+            </div>
+            <div id="elec-content" class="compartment-content">
+                <div class="p-5 bg-white dark:bg-card-dark">
+                    <h3 class="text-center font-bold text-slate-700 dark:text-slate-300 mb-4 text-sm tracking-wider uppercase">Select Month to Pay</h3>
+                    <div class="grid grid-cols-3 gap-3" id="electricity-grid"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="bill-modal" class="fixed inset-0 z-[100] hidden flex flex-col justify-end">
+        <div id="modal-backdrop" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" onclick="closeModal()"></div>
+        <div id="modal-content" class="relative bg-background-light dark:bg-background-dark w-full max-w-lg mx-auto rounded-t-3xl shadow-2xl flex flex-col transition-transform transform translate-y-full duration-300 ease-out">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 class="text-lg font-bold">Payment Details</h2>
+                <button onclick="closeModal()" class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700">
+                    <span class="material-icons-round text-[20px]">close</span>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-6">
+                <div class="relative overflow-hidden rounded-2xl bg-slate-800 shadow-lg">
+                    <div class="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent"></div>
+                    <div class="relative z-10 flex flex-col items-center p-6 text-center gap-2">
+                        <div id="modal-icon-container" class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/20 text-blue-400 mb-1">
+                            <span id="modal-icon" class="material-icons-round text-3xl">bolt</span>
+                        </div>
+                        <div>
+                            <p id="modal-title" class="text-slate-300 text-sm font-medium tracking-wider mb-1">Loading...</p>
+                            <h2 id="modal-amount" class="text-4xl font-extrabold text-white tracking-tight">₹ 0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-xl bg-white dark:bg-card-dark shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+                    <div class="flex items-center justify-between p-4">
+                        <span class="text-sm font-medium text-slate-500">Service</span>
+                        <span id="modal-category" class="text-sm font-bold capitalize text-slate-900 dark:text-white">N/A</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10">
+                        <span class="text-sm font-medium text-red-600 dark:text-red-400">Due Date</span>
+                        <span id="modal-date" class="text-sm font-bold text-red-700 dark:text-red-300">N/A</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 pb-8">
+                <a id="modal-pay-btn" href="#" target="_top" class="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 text-lg font-bold text-white shadow-lg shadow-blue-500/30 active:scale-[0.98]">
+                    <span class="material-icons-round">payment</span>
+                    Proceed to App Gateway
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div class="dashboard" id="bills-container">
-        <div class="loader">Loading...</div>
-    </div>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else { document.documentElement.classList.remove('dark') }
 
-    <button class="fab" id="refresh-btn" onclick="triggerRefresh()">
-        <img src="https://icon-flow-pi.vercel.app/api/render?q=refresh-cw&color=ffffff&size=24" alt="refresh">
-    </button>
+        function toggleCompartment(contentId, chevronId) {
+            document.getElementById(contentId).classList.toggle('open');
+            document.getElementById(chevronId).classList.toggle('rotated');
+        }
+    </script>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
@@ -96,70 +156,139 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
         );
 
-        window.loadBills = async function() {
-            const container = document.getElementById('bills-container');
-            const { data, error } = await supabase.from('family_bills').select('*').order('status', { ascending: false }).order('last_updated', { ascending: false });
+        // BE SURE TO UPDATE THIS IF NEEDED!
+        const VERCEL_API_URL = "https://ankush-worksltd.vercel.app/api/pay";
 
-            if (error) {
-                container.innerHTML = `<div class="loader">Error loading data.</div>`;
-                return;
-            }
+        window.billsData = [];
 
-            if (data.length === 0) {
-                container.innerHTML = `<div class="loader">All clear! No pending items.</div>`;
-                return;
-            }
+        window.manualRefresh = async function() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('spin-anim');
+            await window.loadData();
+            setTimeout(() => icon.classList.remove('spin-anim'), 500);
+        }
 
-            container.innerHTML = ''; 
+        window.loadData = async function() {
+            const { data, error } = await supabase.from('family_bills').select('*').order('id', { ascending: true });
+            if (error) return;
 
-            data.forEach(bill => {
-                const isPending = bill.status === 'pending';
-                const statusText = isPending ? 'Pending' : 'Paid ✅';
-                const cardClass = isPending ? 'card' : 'card paid-card';
-                const customLink = bill.payment_link ? bill.payment_link : '#';
+            window.billsData = data;
+            const recharges = data.filter(b => b.category === 'mobile');
+            const electricity = data.filter(b => b.category === 'electricity');
+
+            // --- RENDER RECHARGES ---
+            const pendingRecharges = recharges.filter(b => b.status === 'pending').length;
+            document.getElementById('recharge-count').innerText = `${pendingRecharges} Action(s) Required`;
+            
+            const rechargeList = document.getElementById('recharge-list');
+            rechargeList.innerHTML = '';
+            
+            recharges.forEach(bill => {
+                const isPaid = bill.status === 'paid';
+                const opacityClass = isPaid ? 'opacity-60 grayscale-[30%]' : '';
                 
-                // Determine IconFlow icon based on category
-                let iconQuery = 'credit-card';
-                if (bill.category === 'electricity') iconQuery = 'zap';
-                if (bill.category === 'mobile') iconQuery = 'smartphone';
-                
-                const iconFlowUrl = `https://icon-flow-pi.vercel.app/api/render?q=${iconQuery}&color=ffffff&size=20`;
+                const actionHtml = isPaid 
+                    ? `<span class="h-10 px-4 flex items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold text-sm"><span class="material-icons-round text-sm mr-1">check_circle</span> Paid</span>`
+                    : `<button onclick="openModal('${bill.id}')" class="h-10 px-4 flex items-center justify-center rounded-lg bg-accent text-white font-bold text-sm shadow-md active:scale-95 transition">Pay</button>`;
 
-                const extraDetails = `
-                    ${bill.description ? `<span>${bill.description}</span>` : ''}
-                    ${bill.due_date ? `<span> • Due: ${bill.due_date}</span>` : ''}
-                `;
+                const dateColor = isPaid ? 'text-slate-500' : 'text-red-500';
+                const dateText = isPaid ? 'Settled' : `Ends: ${bill.due_date || 'N/A'}`;
 
-                const card = document.createElement('div');
-                card.className = cardClass;
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div class="title-group">
-                            <span class="card-title">
-                                <img src="${iconFlowUrl}" alt="${bill.category}">
-                                ${bill.title}
-                            </span>
-                            <div class="card-desc">${extraDetails}</div>
-                        </div>
-                        <span class="badge ${isPending ? 'pending' : 'paid'}">${statusText}</span>
+                rechargeList.innerHTML += `
+                <div class="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 ${opacityClass}">
+                    <div>
+                        <p class="font-bold text-slate-900 dark:text-white">${bill.title}</p>
+                        <p class="text-xs font-medium ${dateColor} mt-0.5">${dateText}</p>
                     </div>
-                    <div class="amount">₹${bill.amount}</div>
-                    <a href="${isPending ? customLink : '#'}" class="btn ${isPending ? 'btn-pay' : 'btn-disabled'}">
-                        ${isPending ? 'Pay via Custom Link' : 'Already Settled'}
-                    </a>
-                `;
-                container.appendChild(card);
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">Amount</p>
+                            <p class="font-bold text-slate-900 dark:text-white">₹ ${bill.amount}</p>
+                        </div>
+                        ${actionHtml}
+                    </div>
+                </div>`;
             });
+
+            // --- RENDER ELECTRICITY ---
+            const elecGrid = document.getElementById('electricity-grid');
+            elecGrid.innerHTML = '';
+            
+            electricity.forEach((bill, index) => {
+                const isPaid = bill.status === 'paid';
+                
+                let colorClass, clickAction, innerHtml;
+
+                if (isPaid) {
+                    // Paid visual state (grey box, unclickable)
+                    colorClass = 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-700 opacity-60';
+                    clickAction = ''; 
+                    innerHtml = `
+                        <span class="material-icons-round text-2xl mb-1 text-emerald-500">check_circle</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Settled</span>
+                    `;
+                } else {
+                    // Pending visual state
+                    const colors = [
+                        'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800', 
+                        'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800', 
+                        'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
+                    ];
+                    colorClass = colors[index % 3] + ' cursor-pointer active:scale-95 transition';
+                    clickAction = `onclick="openModal('${bill.id}')"`;
+                    innerHtml = `
+                        <span class="text-xs font-bold uppercase tracking-wider opacity-80">${bill.title}</span>
+                        <span class="text-lg font-extrabold mt-1">₹${bill.amount}</span>
+                    `;
+                }
+
+                elecGrid.innerHTML += `
+                <div ${clickAction} class="flex flex-col items-center justify-center py-4 px-2 rounded-xl border ${colorClass}">
+                    ${innerHtml}
+                </div>`;
+            });
+
+            if(recharges.length > 0) { document.getElementById('recharge-content').classList.add('open'); document.getElementById('recharge-chevron').classList.add('rotated'); }
+            if(electricity.length > 0) { document.getElementById('elec-content').classList.add('open'); document.getElementById('elec-chevron').classList.add('rotated'); }
         }
 
-        window.triggerRefresh = async function() {
-            const btn = document.getElementById('refresh-btn');
-            btn.classList.add('spinning');
-            await window.loadBills();
-            setTimeout(() => btn.classList.remove('spinning'), 500);
+        window.openModal = function(id) {
+            const bill = window.billsData.find(b => b.id === id);
+            if (!bill) return;
+
+            document.getElementById('modal-title').innerText = bill.title;
+            document.getElementById('modal-amount').innerText = `₹ ${bill.amount}`;
+            document.getElementById('modal-date').innerText = bill.due_date || 'N/A';
+            
+            let icon = 'smartphone', catText = 'Mobile Recharge';
+            if(bill.category === 'electricity') { icon = 'bolt'; catText = 'WBSEDCL Prepaid'; }
+            
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-category').innerText = catText;
+            
+            // Connects directly to your custom Vercel API
+            const gatewayUrl = `${VERCEL_API_URL}?am=${bill.amount}&tn=${encodeURIComponent(bill.title)}`;
+            document.getElementById('modal-pay-btn').href = gatewayUrl;
+
+            const modal = document.getElementById('bill-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+            
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            setTimeout(() => { backdrop.classList.remove('opacity-0'); content.classList.remove('translate-y-full'); }, 10);
         }
 
-        loadBills();
+        window.closeModal = function() {
+            const backdrop = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+            backdrop.classList.add('opacity-0');
+            content.classList.add('translate-y-full');
+            setTimeout(() => { document.getElementById('bill-modal').classList.add('hidden'); document.body.classList.remove('modal-open'); }, 300);
+        }
+
+        loadData();
     </script>
 </body>
-</html>
+                </html>
+    

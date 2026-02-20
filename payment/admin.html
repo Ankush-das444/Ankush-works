@@ -1,99 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin | Manage Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Admin | Command Center</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0F172A", accent: "#3B82F6", 
+                        "background-light": "#F8FAFC", "background-dark": "#0B1120", 
+                        "card-light": "#FFFFFF", "card-dark": "#1E293B"
+                    }
+                }
+            }
+        };
+    </script>
     <style>
-        :root {
-            --bg-color: #F1F5F9;
-            --card-bg: #FFFFFF;
-            --text-main: #0F172A;
-            --border-color: #CBD5E1;
-            --primary: #0F172A;
-            --success: #10B981;
-            --danger: #EF4444;
+        body { transition: background-color 0.3s ease, color 0.3s ease; min-height: 100vh; }
+        ::-webkit-scrollbar { display: none; }
+        
+        .input-field { 
+            width: 100%; padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 500;
+            border: 1px solid #E2E8F0; background-color: #F8FAFC; outline: none; transition: all 0.2s;
+            color: #0F172A;
         }
+        .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); background-color: #FFFFFF;}
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        .dark .input-field { border-color: #334155; background-color: #0F172A; color: #F8FAFC; }
+        .dark .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
         
-        /* Mobile optimized body padding */
-        body { background: var(--bg-color); min-height: 100vh; padding: 16px; color: var(--text-main); }
-        
-        .header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
-        .header h1 { font-size: 24px; font-weight: 700; }
-
-        .dashboard { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin: 0 auto; }
-        
-        .admin-card {
-            background: var(--card-bg); border-radius: 12px; padding: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-            display: flex; flex-direction: column; gap: 12px;
-        }
-
-        .admin-title { font-weight: 700; font-size: 18px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
-        .item-title { font-weight: 600; font-size: 16px; color: var(--primary); }
-        
-        /* Inputs strictly stacked for mobile */
-        .input-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        
-        input, select { 
-            width: 100%;
-            padding: 14px; /* Larger touch target */
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            font-size: 16px; /* 16px prevents iOS auto-zoom on inputs */
-            outline: none; background: #F8FAFC;
-        }
-        input:focus, select:focus { border-color: var(--primary); background: #fff; }
-        
-        /* Button layout for mobile */
-        .btn { padding: 14px; border-radius: 8px; font-weight: 600; font-size: 16px; border: none; cursor: pointer; width: 100%; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-save { background: var(--success); color: white; }
-        .btn-delete { background: white; color: var(--danger); border: 1px solid var(--danger); margin-top: 4px;}
-        
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--primary); color: white; padding: 14px 24px; border-radius: 30px;
-            font-weight: 600; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            white-space: nowrap;
-        }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
-<body>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased pb-12">
+    
+    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md sticky top-0 z-50">
+        <div>
+            <h1 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                <span class="material-icons-round text-accent">admin_panel_settings</span> Setup
+            </h1>
+        </div>
+        <button class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700" onclick="document.documentElement.classList.toggle('dark')">
+            <span class="material-icons-round text-xl">brightness_4</span>
+        </button>
+    </header>
 
-    <div class="header">
-        <h1>Command Center</h1>
-    </div>
-
-    <div class="dashboard">
-        <div class="admin-card">
-            <div class="admin-title">➕ Create New</div>
-            <div class="input-group">
-                <input type="text" id="new-title" placeholder="Title (e.g., WBSEDCL, Vi)">
-                <input type="text" id="new-desc" placeholder="Phone No. / Acc ID">
-                <input type="number" id="new-amount" placeholder="Amount (₹)">
-                <input type="text" id="new-date" placeholder="Due Date (e.g., 24 Oct)">
-                <select id="new-category">
-                    <option value="electricity">Electricity</option>
-                    <option value="mobile">Mobile</option>
-                    <option value="other">Other</option>
-                </select>
-                <input type="text" id="new-link" placeholder="Paste App Payment Link">
-                <button class="btn btn-primary" onclick="addBill()">Add to Dashboard</button>
+    <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-8">
+        
+        <section>
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Add New Entry</h2>
             </div>
-        </div>
+            
+            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden relative">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <div class="p-5 flex flex-col gap-4 mt-1">
+                    
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Category</label>
+                        <select id="new-category" class="input-field font-bold text-accent">
+                            <option value="mobile">📱 Mobile Recharge</option>
+                            <option value="electricity">⚡ Electricity (Month)</option>
+                        </select>
+                    </div>
 
-        <div id="admin-container" style="display: flex; flex-direction: column; gap: 16px;">
-            <p style="text-align:center; color:#64748B;">Loading database...</p>
-        </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Display Title</label>
+                        <input type="text" id="new-title" class="input-field" placeholder="e.g. 'Dad's Vi' or 'Month 1'">
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <div class="w-1/2">
+                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Amount</label>
+                            <input type="number" id="new-amount" class="input-field" placeholder="₹ 0.00">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Due / End Date</label>
+                            <input type="text" id="new-date" class="input-field" placeholder="Optional">
+                        </div>
+                    </div>
+                    
+                    <button onclick="addBill()" class="mt-2 w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl active:scale-[0.98] transition shadow-md flex items-center justify-center gap-2">
+                        <span class="material-icons-round text-[20px]">add_circle</span> Save to Database
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-icons-round text-blue-500 text-sm">smartphone</span> Mobile Recharges
+                </h3>
+                <span id="rec-count" class="text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full">0</span>
+            </div>
+            <div id="admin-recharges" class="flex flex-col gap-4">
+                </div>
+        </section>
+
+        <section>
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-icons-round text-yellow-500 text-sm">bolt</span> Electricity Months
+                </h3>
+                <span id="elec-count" class="text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2.5 py-0.5 rounded-full">0</span>
+            </div>
+            <div id="admin-electricity" class="flex flex-col gap-4">
+                </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="bg-emerald-500 text-white px-5 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 text-sm">
+        <span class="material-icons-round text-[18px]">check_circle</span> <span id="toast-msg">Action Successful!</span>
     </div>
 
-    <div id="toast">Action Successful!</div>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else { document.documentElement.classList.remove('dark'); }
+    </script>
 
-    <script type="module">
+        <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
         const supabase = createClient(
@@ -101,85 +138,118 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
         );
 
-        function showToast(msg) {
+        function showToast(msg = "Action Successful!") {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        window.loadAdminPanel = async function() {
-            const container = document.getElementById('admin-container');
-            const { data, error } = await supabase.from('family_bills').select('*').order('last_updated', { ascending: false });
-
+        window.loadAdmin = async function() {
+            const { data, error } = await supabase.from('family_bills').select('*').order('id');
             if (error) return;
-            container.innerHTML = '';
+
+            const recContainer = document.getElementById('admin-recharges');
+            const elecContainer = document.getElementById('admin-electricity');
+            recContainer.innerHTML = elecContainer.innerHTML = '';
+            
+            let recCount = 0, elecCount = 0;
+
+            if (data.length === 0) {
+                recContainer.innerHTML = `<p class="text-sm text-slate-500 text-center py-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">No recharges found.</p>`;
+                elecContainer.innerHTML = `<p class="text-sm text-slate-500 text-center py-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">No electricity entries found.</p>`;
+            }
 
             data.forEach(bill => {
-                const card = document.createElement('div');
-                card.className = 'admin-card';
-                card.innerHTML = `
-                    <div class="item-title">${bill.title}</div>
-                    <div class="input-group">
-                        <input type="number" id="amt-${bill.id}" value="${bill.amount}" placeholder="Amount (₹)">
-                        <select id="status-${bill.id}">
-                            <option value="pending" ${bill.status === 'pending' ? 'selected' : ''}>Status: Pending</option>
-                            <option value="paid" ${bill.status === 'paid' ? 'selected' : ''}>Status: Paid</option>
-                        </select>
-                        <input type="text" id="link-${bill.id}" value="${bill.payment_link || ''}" placeholder="Update Link">
-                        
-                        <button class="btn btn-save" onclick="updateBill('${bill.id}')">Save Changes</button>
-                        <button class="btn btn-delete" onclick="deleteBill('${bill.id}')">Delete Entry</button>
+                const isPaid = bill.status === 'paid';
+                const statusBadge = isPaid 
+                    ? `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded">PAID</span>`
+                    : `<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded">PENDING</span>`;
+
+                const card = `
+                <div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm relative overflow-hidden group">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-base">${bill.title}</h4>
+                            ${statusBadge}
+                        </div>
+                        <button onclick="deleteBill('${bill.id}')" class="h-8 w-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+                            <span class="material-icons-round text-[18px]">delete_outline</span>
+                        </button>
                     </div>
-                `;
-                container.appendChild(card);
+                    
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50 flex flex-col gap-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Amount (₹)</label>
+                                <input type="number" id="amt-${bill.id}" value="${bill.amount}" class="input-field py-1.5 px-2.5 text-sm font-semibold text-slate-900 dark:text-white bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Due Date</label>
+                                <input type="text" id="date-${bill.id}" value="${bill.due_date || ''}" class="input-field py-1.5 px-2.5 text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" placeholder="N/A">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Payment Status</label>
+                            <select id="status-${bill.id}" class="input-field py-1.5 px-2.5 text-sm font-semibold text-slate-900 dark:text-white bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+                                <option value="pending" ${!isPaid ? 'selected' : ''}>Pending (Action Required)</option>
+                                <option value="paid" ${isPaid ? 'selected' : ''}>Paid (Settled)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button onclick="updateBill('${bill.id}')" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                        <span class="material-icons-round text-[18px]">save</span> Save Changes
+                    </button>
+                </div>`;
+
+                if(bill.category === 'mobile') { recContainer.innerHTML += card; recCount++; }
+                if(bill.category === 'electricity') { elecContainer.innerHTML += card; elecCount++; }
             });
+
+            document.getElementById('rec-count').innerText = recCount;
+            document.getElementById('elec-count').innerText = elecCount;
         }
 
         window.addBill = async function() {
             const title = document.getElementById('new-title').value;
-            const desc = document.getElementById('new-desc').value;
             const amount = document.getElementById('new-amount').value;
             const date = document.getElementById('new-date').value;
             const category = document.getElementById('new-category').value;
-            const link = document.getElementById('new-link').value;
 
-            if (!title || !amount) {
-                alert("Please enter at least a Title and Amount.");
-                return;
-            }
+            if (!title || !amount) { alert("Display Title and Amount are required!"); return; }
 
             const { error } = await supabase.from('family_bills').insert([{
-                title: title, description: desc, amount: amount, due_date: date, category: category, payment_link: link, status: 'pending'
+                title, amount, due_date: date, category, status: 'pending'
             }]);
 
-            if (!error) {
-                showToast("Added Successfully!");
-                document.querySelectorAll('.input-group input').forEach(input => input.value = '');
-                loadAdminPanel();
-            } else { alert("Error adding bill!"); }
+            if (!error) { 
+                showToast("Entry Saved!"); 
+                document.getElementById('new-title').value = '';
+                document.getElementById('new-amount').value = '';
+                document.getElementById('new-date').value = '';
+                loadAdmin(); 
+            }
         }
 
         window.updateBill = async function(id) {
-            const newAmount = document.getElementById(`amt-${id}`).value;
-            const newStatus = document.getElementById(`status-${id}`).value;
-            const newLink = document.getElementById(`link-${id}`).value;
+            const amount = document.getElementById(`amt-${id}`).value;
+            const date = document.getElementById(`date-${id}`).value;
+            const status = document.getElementById(`status-${id}`).value;
 
-            const { error } = await supabase.from('family_bills').update({ 
-                amount: newAmount, status: newStatus, payment_link: newLink, last_updated: new Date().toISOString()
-            }).eq('id', id);
-
-            if (!error) { showToast("Updated!"); } else { alert("Error updating!"); }
+            const { error } = await supabase.from('family_bills').update({ amount, due_date: date, status }).eq('id', id);
+            if (!error) { showToast("Updated Successfully!"); loadAdmin(); }
         }
 
         window.deleteBill = async function(id) {
-            if (confirm("Remove this entry completely?")) {
-                const { error } = await supabase.from('family_bills').delete().eq('id', id);
-                if (!error) { showToast("Deleted!"); loadAdminPanel(); }
+            if (confirm("Are you sure you want to permanently delete this item?")) {
+                await supabase.from('family_bills').delete().eq('id', id);
+                showToast("Deleted!"); loadAdmin();
             }
         }
 
-        loadAdminPanel();
+        loadAdmin();
     </script>
+
 </body>
 </html>

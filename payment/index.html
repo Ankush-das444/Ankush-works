@@ -103,7 +103,6 @@
         const supabase = createClient('https://hzwjzpwhjpkwbnevylcr.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M');
         
         const VERCEL_PAY = "https://ankush-worksltd.vercel.app/api/pay";
-        const VERCEL_RECEIPT = "https://ankush-worksltd.vercel.app/api/receipt";
 
         window.billsData = [];
 
@@ -121,17 +120,11 @@
             const recList = document.getElementById('recharge-list'); recList.innerHTML = '';
             recs.forEach(bill => {
                 const isPaid = bill.status === 'paid';
-                
-                let rData = { tx: "", cname: "N/A", ddt: "N/A", bdt: "N/A", bp: "N/A", mode: "UPI", pdt: "N/A" };
-                if (bill.due_date && bill.due_date.startsWith('{')) { try { rData = JSON.parse(bill.due_date); } catch(e){} }
-                
-                const recUrl = `${VERCEL_RECEIPT}?am=${bill.amount}&title=${encodeURIComponent(bill.title)}&tx=${rData.tx}&cname=${encodeURIComponent(rData.cname)}&bdt=${encodeURIComponent(rData.bdt)}&ddt=${encodeURIComponent(rData.ddt)}&bp=${encodeURIComponent(rData.bp)}&mode=${encodeURIComponent(rData.mode)}&pdt=${encodeURIComponent(rData.pdt)}`;
-                
                 const action = isPaid 
-                    ? `<a href="${recUrl}" class="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 font-bold text-xs border border-emerald-200 flex items-center gap-1 shadow-sm"><span class="material-icons-round text-[14px]">receipt_long</span> Receipt</a>` 
+                    ? `<span class="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 font-bold text-xs border border-emerald-200 flex items-center gap-1"><span class="material-icons-round text-[14px]">check_circle</span> Settled</span>` 
                     : `<button onclick="openModal('${bill.id}')" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-bold text-xs shadow-md">Pay</button>`;
                 
-                recList.innerHTML += `<div class="flex justify-between items-center p-4 rounded-xl border border-slate-200 bg-white shadow-sm ${isPaid?'opacity-60':''}"><div><p class="font-bold text-slate-900 text-sm">${bill.title}</p><p class="text-[10px] font-bold text-slate-500 uppercase mt-1">Due: ${rData.ddt}</p></div><div class="flex items-center gap-3"><div class="text-right"><p class="text-[10px] text-slate-500 uppercase font-bold">Amount</p><p class="font-bold text-slate-900">₹${bill.amount}</p></div>${action}</div></div>`;
+                recList.innerHTML += `<div class="flex justify-between items-center p-4 rounded-xl border border-slate-200 bg-white shadow-sm ${isPaid?'opacity-60 grayscale-[20%]':''}"><div><p class="font-bold text-slate-900 text-sm">${bill.title}</p><p class="text-[10px] font-bold text-slate-500 uppercase mt-1">Due: ${bill.due_date || 'N/A'}</p></div><div class="flex items-center gap-3"><div class="text-right"><p class="text-[10px] text-slate-500 uppercase font-bold">Amount</p><p class="font-bold text-slate-900">₹${bill.amount}</p></div>${action}</div></div>`;
             });
             window.renderElectricity();
         }
@@ -148,23 +141,18 @@
                 let house = bill.title; let month = "Current";
                 if (bill.title.includes(' - ')) { const parts = bill.title.split(' - '); month = parts.pop(); house = parts.join(' - '); }
 
-                let rData = { tx: "", cname: "N/A", ddt: "N/A", bdt: "N/A", bp: "N/A", mode: "EG Payments", pdt: "N/A" };
-                if (bill.due_date && bill.due_date.startsWith('{')) { try { rData = JSON.parse(bill.due_date); } catch(e){} }
-
-                const recUrl = `${VERCEL_RECEIPT}?am=${bill.amount}&title=${encodeURIComponent(house)}&tx=${rData.tx}&cname=${encodeURIComponent(rData.cname)}&bdt=${encodeURIComponent(rData.bdt)}&ddt=${encodeURIComponent(rData.ddt)}&bp=${encodeURIComponent(rData.bp)}&mode=${encodeURIComponent(rData.mode)}&pdt=${encodeURIComponent(rData.pdt)}`;
-                
                 const action = isPaid 
-                    ? `<a href="${recUrl}" class="px-3 py-2 rounded-lg bg-emerald-50 text-emerald-600 font-bold text-xs border border-emerald-200 flex items-center gap-1 shadow-sm"><span class="material-icons-round text-xs">receipt_long</span> Receipt</a>` 
+                    ? `<span class="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 font-bold text-xs border border-emerald-200 flex items-center gap-1"><span class="material-icons-round text-xs">check_circle</span> Settled</span>` 
                     : `<button onclick="openModal('${bill.id}')" class="px-4 py-2 rounded-lg bg-yellow-400 text-yellow-900 font-bold text-xs shadow-md">Pay</button>`;
                 
                 let theme = isPaid ? 'bg-slate-50 border-slate-200 text-slate-500' : house==='MD' ? 'bg-purple-50 border-purple-200 text-purple-700' : house==='UD - STORE' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700';
 
                 list.innerHTML += `
-                <div class="flex justify-between items-center p-4 rounded-xl border ${theme} ${isPaid?'opacity-60':''}">
+                <div class="flex justify-between items-center p-4 rounded-xl border ${theme} ${isPaid?'opacity-60 grayscale-[20%]':''}">
                     <div>
                         <p class="font-bold text-slate-900">${house}</p>
                         <p class="text-[10px] font-bold uppercase tracking-wider mt-1 text-slate-500">Month: <span class="text-slate-900">${month}</span></p>
-                        ${!isPaid && rData.ddt !== "N/A" ? `<p class="text-[10px] font-bold text-red-500 mt-0.5 uppercase tracking-wider">Due: ${rData.ddt}</p>` : ''}
+                        ${!isPaid && bill.due_date ? `<p class="text-[10px] font-bold text-red-500 mt-0.5 uppercase tracking-wider">Due: ${bill.due_date}</p>` : ''}
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="text-right"><p class="text-[10px] text-slate-500 uppercase font-bold">Amount</p><p class="text-lg font-extrabold text-slate-900 leading-tight">₹${bill.amount}</p></div>
@@ -177,9 +165,6 @@
         window.openModal = function(id) {
             const bill = window.billsData.find(b => b.id === id);
             if (!bill) return;
-            
-            let rData = { ddt: "N/A" };
-            if (bill.due_date && bill.due_date.startsWith('{')) { try { rData = JSON.parse(bill.due_date); } catch(e){} }
 
             document.getElementById('modal-title').innerText = bill.title;
             document.getElementById('modal-amount').innerText = `₹ ${bill.amount}`;
@@ -189,8 +174,7 @@
             
             document.getElementById('modal-icon').innerText = icon;
             
-            const recUrl = `${VERCEL_RECEIPT}?am=${bill.amount}&title=${encodeURIComponent(bill.title)}&tx=${rData.tx}&cname=${encodeURIComponent(rData.cname)}&bdt=${encodeURIComponent(rData.bdt)}&ddt=${encodeURIComponent(rData.ddt)}&bp=${encodeURIComponent(rData.bp)}&mode=${encodeURIComponent(rData.mode)}&pdt=${encodeURIComponent(rData.pdt)}`;
-            const gatewayUrl = `${VERCEL_PAY}?am=${bill.amount}&tn=${encodeURIComponent(bill.title)}&rec=${encodeURIComponent(recUrl)}`;
+            const gatewayUrl = `${VERCEL_PAY}?am=${bill.amount}&tn=${encodeURIComponent(bill.title)}`;
             document.getElementById('modal-pay-btn').href = gatewayUrl;
 
             const modal = document.getElementById('bill-modal');

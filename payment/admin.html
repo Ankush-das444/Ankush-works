@@ -23,7 +23,6 @@
             }
         };
     </script>
-    
     <style>
         body { transition: background-color 0.3s ease, color 0.3s ease; min-height: 100vh; }
         ::-webkit-scrollbar { display: none; }
@@ -40,26 +39,29 @@
         
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        /* Custom checkbox style */
+        .notify-cb { width: 20px; height: 20px; cursor: pointer; border-radius: 6px; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased pb-12">
     
-        <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md sticky top-0 z-50">
+    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md sticky top-0 z-50">
         <div>
             <h1 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
                 <span class="material-icons-round text-accent">admin_panel_settings</span> Setup
             </h1>
         </div>
         <div class="flex items-center gap-2">
-            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-200 dark:hover:bg-emerald-900/50" onclick="notifyDad()">
-                <span class="material-icons-round text-xl">notifications_active</span>
+            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-200 dark:hover:bg-emerald-900/50 shadow-sm" onclick="notifyDad()">
+                <span class="material-icons-round text-[20px]">send</span>
             </button>
-            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700" onclick="document.documentElement.classList.toggle('dark')">
-                <span class="material-icons-round text-xl">brightness_4</span>
+            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700 shadow-sm" onclick="document.documentElement.classList.toggle('dark')">
+                <span class="material-icons-round text-[20px]">brightness_4</span>
             </button>
         </div>
     </header>
-    
+
     <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-8">
         
         <section>
@@ -75,13 +77,13 @@
                         <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Category</label>
                         <select id="new-category" class="input-field font-bold text-accent">
                             <option value="mobile">📱 Mobile Recharge</option>
-                            <option value="electricity">⚡ Electricity (Month)</option>
+                            <option value="electricity">⚡ Electricity (Month/House)</option>
                         </select>
                     </div>
 
                     <div>
                         <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Display Title</label>
-                        <input type="text" id="new-title" class="input-field" placeholder="e.g. 'Dad's Vi' or 'Month 1'">
+                        <input type="text" id="new-title" class="input-field" placeholder="e.g. 'Main House - Jan'">
                     </div>
                     
                     <div class="flex gap-3">
@@ -109,19 +111,17 @@
                 </h3>
                 <span id="rec-count" class="text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full">0</span>
             </div>
-            <div id="admin-recharges" class="flex flex-col gap-4">
-                </div>
+            <div id="admin-recharges" class="flex flex-col gap-4"></div>
         </section>
 
         <section>
             <div class="flex items-center justify-between mb-3 px-1">
                 <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <span class="material-icons-round text-yellow-500 text-sm">bolt</span> Electricity Months
+                    <span class="material-icons-round text-yellow-500 text-sm">bolt</span> Electricity Postpaid
                 </h3>
                 <span id="elec-count" class="text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2.5 py-0.5 rounded-full">0</span>
             </div>
-            <div id="admin-electricity" class="flex flex-col gap-4">
-                </div>
+            <div id="admin-electricity" class="flex flex-col gap-4"></div>
         </section>
 
     </main>
@@ -136,7 +136,7 @@
         } else { document.documentElement.classList.remove('dark'); }
     </script>
 
-        <script type="module">
+    <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
         const supabase = createClient(
@@ -151,40 +151,14 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
+        window.currentBills = []; // Global variable to hold data for the notification
+
         window.loadAdmin = async function() {
             const { data, error } = await supabase.from('family_bills').select('*').order('id');
             if (error) return;
 
-            window.currentBills = data;
+            window.currentBills = data; // Save data globally
 
-                    // Global variable to hold data for the notification
-                window.currentBills = []; // Keep this at the top
-
-        window.notifyDad = function() {
-            const pending = window.currentBills.filter(b => b.status === 'pending');
-            
-            if (pending.length === 0) {
-                showToast("No pending bills!");
-                return;
-            }
-
-            // Exactly matching your requested format
-            let message = `No. Of Pendings:- ${pending.length}\n`;
-            
-            pending.forEach(bill => {
-                message += `${bill.title} - ₹${bill.amount}\n`;
-            });
-
-            // Replace with his actual number (e.g., 919876543210)
-            const DAD_PHONE_NUMBER = "919735154326"; 
-            
-            // Using the native WhatsApp deep link scheme for WebViews
-            const waUrl = `whatsapp://send?phone=${DAD_PHONE_NUMBER}&text=${encodeURIComponent(message)}`;
-            
-            // Changing location.href forces the Android WebView to open the external app
-            window.location.href = waUrl;
-        }
-            
             const recContainer = document.getElementById('admin-recharges');
             const elecContainer = document.getElementById('admin-electricity');
             recContainer.innerHTML = elecContainer.innerHTML = '';
@@ -202,14 +176,20 @@
                     ? `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded">PAID</span>`
                     : `<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded">PENDING</span>`;
 
+                // Add a checkbox ONLY if the bill is pending
+                const checkboxHtml = !isPaid 
+                    ? `<input type="checkbox" value="${bill.id}" class="notify-cb text-accent border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800">`
+                    : ``;
+
                 const card = `
                 <div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm relative overflow-hidden group">
                     <div class="flex justify-between items-start">
-                        <div class="flex items-center gap-2">
-                            <h4 class="font-bold text-slate-900 dark:text-white text-base">${bill.title}</h4>
+                        <div class="flex items-center gap-3">
+                            ${checkboxHtml}
+                            <h4 class="font-bold text-slate-900 dark:text-white text-base leading-tight">${bill.title}</h4>
                             ${statusBadge}
                         </div>
-                        <button onclick="deleteBill('${bill.id}')" class="h-8 w-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+                        <button onclick="deleteBill('${bill.id}')" class="h-8 w-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition shrink-0 ml-2">
                             <span class="material-icons-round text-[18px]">delete_outline</span>
                         </button>
                     </div>
@@ -247,6 +227,39 @@
             document.getElementById('elec-count').innerText = elecCount;
         }
 
+        window.notifyDad = function() {
+            // 1. Get all checked checkboxes
+            const checkedBoxes = document.querySelectorAll('.notify-cb:checked');
+            
+            if (checkedBoxes.length === 0) {
+                showToast("Please check at least one pending bill to send!");
+                return;
+            }
+
+            // 2. Extract their IDs and filter the data
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+            const selectedBills = window.currentBills.filter(bill => selectedIds.includes(bill.id));
+            
+            // 3. Craft the exact message format you wanted
+            let message = `No. Of Pendings:- ${selectedBills.length}\n`;
+            let totalAmount = 0;
+
+            selectedBills.forEach(bill => {
+                totalAmount += parseFloat(bill.amount);
+                message += `🔹 ${bill.title} - ₹${bill.amount}\n`;
+            });
+
+            message += `\n*Total Due: ₹${totalAmount}*`;
+
+            // 4. REPLACE THIS WITH YOUR DAD'S NUMBER (e.g., 919876543210)
+            const DAD_PHONE_NUMBER = "919735154326"; 
+            
+            // 5. Native WhatsApp trigger
+            const waUrl = `whatsapp://send?phone=${DAD_PHONE_NUMBER}&text=${encodeURIComponent(message)}`;
+            window.location.href = waUrl;
+        }
+
+        // Database action functions
         window.addBill = async function() {
             const title = document.getElementById('new-title').value;
             const amount = document.getElementById('new-amount').value;
@@ -286,6 +299,5 @@
 
         loadAdmin();
     </script>
-
 </body>
 </html>

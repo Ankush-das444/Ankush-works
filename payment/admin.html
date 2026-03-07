@@ -8,6 +8,7 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <script>
         tailwind.config = {
@@ -54,6 +55,29 @@
     </header>
 
     <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-8">
+                <section class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden relative p-5">
+            <h2 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3">
+                <span class="material-icons-round text-emerald-500">document_scanner</span> Auto-Fill from Screenshot
+            </h2>
+            <p class="text-xs text-slate-500 mb-4">Upload an EG Payments receipt to auto-extract BBPS details.</p>
+            
+            <input type="file" id="receipt-upload" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 mb-3 cursor-pointer">
+            
+            <div id="scanner-status" class="hidden flex items-center gap-2 text-xs font-bold text-blue-500 bg-blue-50 p-3 rounded-lg">
+                <span class="material-icons-round text-sm animate-spin">refresh</span> Scanning image... please wait.
+            </div>
+
+            <div id="scanned-results" class="hidden mt-4 flex flex-col gap-3 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                <h3 class="text-[10px] uppercase font-bold text-slate-400">Extracted Data (Verify before saving)</h3>
+                <input type="text" id="scan-tx" class="input-field py-1.5 text-sm" placeholder="BBPS Txn ID">
+                <input type="text" id="scan-cnum" class="input-field py-1.5 text-sm" placeholder="Consumer No.">
+                <input type="text" id="scan-bnum" class="input-field py-1.5 text-sm" placeholder="Bill No.">
+                <input type="text" id="scan-amount" class="input-field py-1.5 text-sm" placeholder="Amount">
+                <button onclick="copyToClipboard()" class="w-full bg-emerald-500 text-white font-bold py-2 rounded-lg text-sm active:scale-95 transition mt-1">
+                    Copy Details String
+                </button>
+            </div>
+                </section>
         
         <section>
             <div class="flex items-center justify-between mb-3 px-1">
@@ -301,7 +325,66 @@
                 showToast("Deleted!"); loadAdmin();
             }
         }
+        // --- SMART SCANNER LOGIC ---
+        document.getElementById('receipt-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
+            const statusUI = document.getElementById('scanner-status');
+            const resultsUI = document.getElementById('scanned-results');
+            
+            statusUI.classList.remove('hidden');
+            resultsUI.classList.add('hidden');
+
+            try {
+                // Run the OCR Engine
+                const { data: { text } } = await Tesseract.recognize(file, 'eng');
+                console.log("RAW OCR TEXT: \n", text); // Helpful for debugging!
+
+                // 1. Extract BBPS / Txn ID (Looks for 'TXN', 'Transaction', or 'BBPS' followed by alphanumeric)
+                const txMatch = text.match(/(?:TXN|Transaction|BBPS|Ref)[\s\.:-]*([A-Z0-9]{8,20})/i);
+                const extractedTx = txMatch ? txMatch[1] : '';
+
+                // 2. Extract Consumer Number (Looks for 'Consumer', 'Account', 'Id' followed by numbers)
+                const cnumMatch = text.match(/(?:Consumer|Account|Cons)[\sNo\.:-]*(\d{7,15})/i);
+                const extractedCnum = cnumMatch ? cnumMatch[1] : '';
+
+                // 3. Extract Bill Number
+                const bnumMatch = text.match(/(?:Bill)[\sNo\.:-]*(\d{5,15})/i);
+                const extractedBnum = bnumMatch ? bnumMatch[1] : '';
+
+                // 4. Extract Amount (Looks for Rupee symbol or 'Amount' followed by numbers)
+                const amountMatch = text.match(/(?:Amount|Total|Paid|₹|Rs\.?)[\s\.:-]*([\d,]+(?:\.\d{2})?)/i);
+                const extractedAmount = amountMatch ? amountMatch[1].replace(/,/g, '') : '';
+
+                // Fill the UI fields
+                document.getElementById('scan-tx').value = extractedTx;
+                document.getElementById('scan-cnum').value = extractedCnum;
+                document.getElementById('scan-bnum').value = extractedBnum;
+                document.getElementById('scan-amount').value = extractedAmount;
+
+                statusUI.classList.add('hidden');
+                resultsUI.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                statusUI.innerHTML = `<span class="material-icons-round text-sm text-red-500">error</span> Failed to scan image.`;
+            }
+        });
+
+        // Helper function to bundle the data so you can easily paste it into your Database updates
+        window.copyToClipboard = function() {
+            const tx = document.getElementById('scan-tx').value;
+            const cnum = document.getElementById('scan-cnum').value;
+            const bnum = document.getElementById('scan-bnum').value;
+            
+            // Format it perfectly for your URL parameters or Supabase description field
+            const combinedString = `Cons: ${cnum} | Bill: ${bnum} | BBPS: ${tx}`;
+            
+            navigator.clipboard.writeText(combinedString);
+            showToast("Details Copied!");
+        }
+        
         loadAdmin();
     </script>
 </body>

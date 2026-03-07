@@ -1,390 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>Admin | Command Center</title>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#0F172A", accent: "#3B82F6", 
-                        "background-light": "#F8FAFC", "background-dark": "#0B1120", 
-                        "card-light": "#FFFFFF", "card-dark": "#1E293B"
-                    }
-                }
-            }
-        };
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#0F172A", accent: "#3B82F6", "background-dark": "#0B1120", "card-dark": "#1E293B" } } } };
     </script>
     <style>
-        body { transition: background-color 0.3s ease, color 0.3s ease; min-height: 100vh; }
-        ::-webkit-scrollbar { display: none; }
-        .input-field { width: 100%; padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 500; border: 1px solid #E2E8F0; background-color: #F8FAFC; outline: none; transition: all 0.2s; color: #0F172A; }
-        .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); background-color: #FFFFFF;}
-        .dark .input-field { border-color: #334155; background-color: #0F172A; color: #F8FAFC; }
-        .dark .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+        body { min-height: 100vh; } ::-webkit-scrollbar { display: none; }
+        .input-field { width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500; border: 1px solid #334155; background-color: #0F172A; color: white; outline: none; }
+        .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s; z-index: 100; }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .notify-cb { width: 20px; height: 20px; cursor: pointer; border-radius: 6px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased pb-12">
+<body class="bg-background-dark text-white font-sans pb-12">
     
-    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md sticky top-0 z-50">
-        <div>
-            <h1 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
-                <span class="material-icons-round text-accent">admin_panel_settings</span> Setup
-            </h1>
-        </div>
-        <div class="flex items-center gap-2">
-            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition hover:bg-emerald-200 dark:hover:bg-emerald-900/50 shadow-sm" onclick="notifyDad()">
-                <span class="material-icons-round text-[20px]">send</span>
-            </button>
-            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-700 shadow-sm" onclick="document.documentElement.classList.toggle('dark')">
-                <span class="material-icons-round text-[20px]">brightness_4</span>
-            </button>
-        </div>
+    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-800 bg-background-dark/95 sticky top-0 z-50">
+        <h1 class="text-xl font-extrabold flex items-center gap-2"><span class="material-icons-round text-accent">admin_panel_settings</span> Setup</h1>
+        <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50" onclick="notifyDad()"><span class="material-icons-round">send</span></button>
     </header>
 
-    <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-8">
-                <section class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden relative p-5">
-            <h2 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3">
-                <span class="material-icons-round text-emerald-500">document_scanner</span> Auto-Fill from Screenshot
-            </h2>
-            <p class="text-xs text-slate-500 mb-4">Upload an EG Payments receipt to auto-extract BBPS details.</p>
-            
-            <input type="file" id="receipt-upload" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 mb-3 cursor-pointer">
-            
-            <div id="scanner-status" class="hidden flex items-center gap-2 text-xs font-bold text-blue-500 bg-blue-50 p-3 rounded-lg">
-                <span class="material-icons-round text-sm animate-spin">refresh</span> Scanning image... please wait.
-            </div>
-
-            <div id="scanned-results" class="hidden mt-4 flex flex-col gap-3 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <h3 class="text-[10px] uppercase font-bold text-slate-400">Extracted Data (Verify before saving)</h3>
-                <input type="text" id="scan-tx" class="input-field py-1.5 text-sm" placeholder="BBPS Txn ID">
-                <input type="text" id="scan-cnum" class="input-field py-1.5 text-sm" placeholder="Consumer No.">
-                <input type="text" id="scan-bnum" class="input-field py-1.5 text-sm" placeholder="Bill No.">
-                <input type="text" id="scan-amount" class="input-field py-1.5 text-sm" placeholder="Amount">
-                <button onclick="copyToClipboard()" class="w-full bg-emerald-500 text-white font-bold py-2 rounded-lg text-sm active:scale-95 transition mt-1">
-                    Copy Details String
-                </button>
-            </div>
-                </section>
+    <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-6">
         
-        <section>
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Add New Entry</h2>
+        <section class="bg-card-dark rounded-2xl shadow-sm border border-slate-800 p-5">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2 mb-3"><span class="material-icons-round text-emerald-500">document_scanner</span> OCR Auto-Fill</h2>
+            <input type="file" id="receipt-upload" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-emerald-900/30 file:text-emerald-400 mb-3 cursor-pointer">
+            <div id="scanner-status" class="hidden flex items-center gap-2 text-xs font-bold text-blue-400 bg-blue-900/20 p-3 rounded-lg"><span class="material-icons-round animate-spin">refresh</span> Scanning...</div>
+            <div id="scanned-results" class="hidden mt-3 flex flex-col gap-2">
+                <input type="text" id="scan-tx" class="input-field py-2 text-xs" placeholder="Txn ID">
+                <input type="text" id="scan-cnum" class="input-field py-2 text-xs" placeholder="Consumer No.">
+                <button onclick="copyToClipboard()" class="bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm mt-1">Copy Data String</button>
             </div>
-            
-            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden relative">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-                <div class="p-5 flex flex-col gap-4 mt-1">
-                    
-                    <div>
-                        <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Category</label>
-                        <select id="new-category" class="input-field font-bold text-accent" onchange="toggleInputFields()">
-                            <option value="mobile">📱 Mobile Recharge</option>
-                            <option value="electricity">⚡ Electricity (3 Houses)</option>
-                        </select>
-                    </div>
+        </section>
 
-                    <div id="field-mobile-title">
-                        <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Recharge Name</label>
-                        <input type="text" id="new-title-mobile" class="input-field" placeholder="e.g. Dad's Vi">
-                    </div>
-
-                    <div id="field-elec-title" class="hidden flex gap-3">
-                        <div class="w-1/2">
-                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Select House</label>
-                            <select id="new-house" class="input-field font-bold">
-                                <option value="MD">MD</option>
-                                <option value="UD - STORE">UD - STORE</option>
-                                <option value="UD - MAIN HOUSE">UD - MAIN HOUSE</option>
-                            </select>
-                        </div>
-                        <div class="w-1/2">
-                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Month</label>
-                            <input type="text" id="new-month" class="input-field font-bold text-blue-500" placeholder="e.g. Jan">
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-3">
-                        <div class="w-1/2">
-                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Amount</label>
-                            <input type="number" id="new-amount" class="input-field" placeholder="₹ 0.00">
-                        </div>
-                        <div class="w-1/2">
-                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1.5 ml-1">Due / End Date</label>
-                            <input type="text" id="new-date" class="input-field" placeholder="Optional">
-                        </div>
-                    </div>
-                    
-                    <button onclick="addBill()" class="mt-2 w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl active:scale-[0.98] transition shadow-md flex items-center justify-center gap-2">
-                        <span class="material-icons-round text-[20px]">add_circle</span> Save to Database
-                    </button>
+        <section class="bg-card-dark rounded-2xl shadow-sm border border-slate-800 p-5">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Add Entry</h2>
+            <div class="flex flex-col gap-3">
+                <select id="new-category" class="input-field text-accent" onchange="toggleInputFields()">
+                    <option value="mobile">📱 Mobile</option>
+                    <option value="electricity">⚡ Electricity</option>
+                </select>
+                <input type="text" id="new-title-mobile" class="input-field" placeholder="Recharge Name">
+                <div id="field-elec-title" class="hidden flex gap-2">
+                    <select id="new-house" class="input-field w-1/2"><option value="MD">MD</option><option value="UD - STORE">UD - STORE</option><option value="UD - MAIN HOUSE">UD - MAIN HOUSE</option></select>
+                    <input type="text" id="new-month" class="input-field w-1/2 text-accent" placeholder="Month (e.g. Jan)">
                 </div>
+                <input type="number" id="new-amount" class="input-field" placeholder="Amount ₹">
+                <button onclick="addBill()" class="bg-white text-slate-900 font-bold py-3 rounded-xl mt-1">Save to Database</button>
             </div>
         </section>
 
-        <section>
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <span class="material-icons-round text-blue-500 text-sm">smartphone</span> Mobile Recharges
-                </h3>
-                <span id="rec-count" class="text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="admin-recharges" class="flex flex-col gap-4"></div>
-        </section>
-
-        <section>
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <span class="material-icons-round text-yellow-500 text-sm">bolt</span> Electricity Postpaid
-                </h3>
-                <span id="elec-count" class="text-xs font-bold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2.5 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="admin-electricity" class="flex flex-col gap-4"></div>
-        </section>
+        <section><h3 class="text-sm font-bold text-slate-400 uppercase mb-3">📱 Recharges</h3><div id="admin-recharges" class="flex flex-col gap-3"></div></section>
+        <section><h3 class="text-sm font-bold text-slate-400 uppercase mb-3">⚡ Electricity</h3><div id="admin-electricity" class="flex flex-col gap-3"></div></section>
 
     </main>
 
-    <div id="toast" class="bg-emerald-500 text-white px-5 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 text-sm">
-        <span class="material-icons-round text-[18px]">check_circle</span> <span id="toast-msg">Action Successful!</span>
-    </div>
+    <div id="toast" class="bg-emerald-500 text-white px-5 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 text-sm"><span id="toast-msg">Success!</span></div>
 
     <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else { document.documentElement.classList.remove('dark'); }
-
-        // Toggles the Add UI based on category
         function toggleInputFields() {
             const cat = document.getElementById('new-category').value;
-            if (cat === 'electricity') {
-                document.getElementById('field-mobile-title').classList.add('hidden');
-                document.getElementById('field-elec-title').classList.remove('hidden');
-            } else {
-                document.getElementById('field-mobile-title').classList.remove('hidden');
-                document.getElementById('field-elec-title').classList.add('hidden');
-            }
+            if (cat === 'electricity') { document.getElementById('new-title-mobile').classList.add('hidden'); document.getElementById('field-elec-title').classList.remove('hidden'); document.getElementById('field-elec-title').classList.add('flex'); } 
+            else { document.getElementById('new-title-mobile').classList.remove('hidden'); document.getElementById('field-elec-title').classList.add('hidden'); document.getElementById('field-elec-title').classList.remove('flex'); }
         }
     </script>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        const supabase = createClient('https://hzwjzpwhjpkwbnevylcr.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M');
 
-        const supabase = createClient(
-            'https://hzwjzpwhjpkwbnevylcr.supabase.co', 
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
-        );
-
-        function showToast(msg = "Action Successful!") {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
+        function showToast(msg) { document.getElementById('toast-msg').innerText = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
 
         window.currentBills = [];
+
+        // OCR Engine
+        document.getElementById('receipt-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            document.getElementById('scanner-status').classList.remove('hidden'); document.getElementById('scanned-results').classList.add('hidden');
+            try {
+                const { data: { text } } = await Tesseract.recognize(file, 'eng');
+                const txMatch = text.match(/(?:Txn|Transaction|BBPS|Ref)[\s\.:-]*([A-Z0-9]{8,22})/i);
+                const cnumMatch = text.match(/(?:Consumer|Account|Cons|Customer)[\sNo\.:-]*([a-zA-Z0-9]{7,15})/i);
+                
+                document.getElementById('scan-tx').value = txMatch ? txMatch[1] : '';
+                document.getElementById('scan-cnum').value = cnumMatch ? cnumMatch[1] : '';
+                
+                document.getElementById('scanner-status').classList.add('hidden'); document.getElementById('scanned-results').classList.remove('hidden');
+            } catch (err) { alert("Scan failed."); document.getElementById('scanner-status').classList.add('hidden'); }
+        });
+
+        window.copyToClipboard = function() {
+            const tx = document.getElementById('scan-tx').value; const cnum = document.getElementById('scan-cnum').value;
+            navigator.clipboard.writeText(`C:${cnum}|T:${tx}`); showToast("Copied! Paste in Receipt Data.");
+        }
 
         window.loadAdmin = async function() {
             const { data, error } = await supabase.from('family_bills').select('*').order('id');
             if (error) return;
-
             window.currentBills = data;
-            const recContainer = document.getElementById('admin-recharges');
-            const elecContainer = document.getElementById('admin-electricity');
-            recContainer.innerHTML = elecContainer.innerHTML = '';
+            const rec = document.getElementById('admin-recharges'); const elec = document.getElementById('admin-electricity');
+            rec.innerHTML = elec.innerHTML = '';
             
-            let recCount = 0, elecCount = 0;
-
-            if (data.length === 0) {
-                recContainer.innerHTML = `<p class="text-sm text-slate-500 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700">No recharges found.</p>`;
-                elecContainer.innerHTML = `<p class="text-sm text-slate-500 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700">No electricity entries found.</p>`;
-            }
-
             data.forEach(bill => {
                 const isPaid = bill.status === 'paid';
-                const statusBadge = isPaid 
-                    ? `<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded">PAID</span>`
-                    : `<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded">PENDING</span>`;
-
-                const checkboxHtml = !isPaid ? `<input type="checkbox" value="${bill.id}" class="notify-cb text-accent border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800">` : ``;
-
+                const cb = !isPaid ? `<input type="checkbox" value="${bill.id}" class="notify-cb bg-slate-800">` : ``;
+                
                 const card = `
-                <div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm relative overflow-hidden group">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-center gap-3">
-                            ${checkboxHtml}
-                            <h4 class="font-bold text-slate-900 dark:text-white text-base leading-tight">${bill.title}</h4>
-                            ${statusBadge}
-                        </div>
-                        <button onclick="deleteBill('${bill.id}')" class="h-8 w-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 transition shrink-0 ml-2">
-                            <span class="material-icons-round text-[18px]">delete_outline</span>
-                        </button>
+                <div class="bg-card-dark p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
+                    <div class="flex justify-between items-center"><div class="flex gap-2">${cb}<h4 class="font-bold text-sm">${bill.title}</h4></div><button onclick="deleteBill('${bill.id}')" class="text-red-500 material-icons-round text-sm">delete</button></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="amt-${bill.id}" value="${bill.amount}" class="input-field py-1 px-2 text-xs" placeholder="₹">
+                        <select id="status-${bill.id}" class="input-field py-1 px-2 text-xs"><option value="pending" ${!isPaid?'selected':''}>Pending</option><option value="paid" ${isPaid?'selected':''}>Paid</option></select>
                     </div>
-                    
-                    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50 flex flex-col gap-3">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Amount (₹)</label>
-                                <input type="number" id="amt-${bill.id}" value="${bill.amount}" class="input-field py-1.5 px-2.5 text-sm font-semibold">
-                            </div>
-                            <div>
-                                <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Due Date</label>
-                                <input type="text" id="date-${bill.id}" value="${bill.due_date || ''}" class="input-field py-1.5 px-2.5 text-sm font-medium">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Payment Status</label>
-                            <select id="status-${bill.id}" class="input-field py-1.5 px-2.5 text-sm font-semibold">
-                                <option value="pending" ${!isPaid ? 'selected' : ''}>Pending (Action Required)</option>
-                                <option value="paid" ${isPaid ? 'selected' : ''}>Paid (Settled)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="updateBill('${bill.id}')" class="w-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 font-semibold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
-                        <span class="material-icons-round text-[18px]">save</span> Save Changes
-                    </button>
+                    <input type="text" id="data-${bill.id}" value="${bill.due_date || ''}" class="input-field py-1 px-2 text-xs border-emerald-900/50" placeholder="Paste Scanned Receipt Data Here">
+                    <button onclick="updateBill('${bill.id}')" class="bg-slate-800 text-white font-bold py-2 rounded-lg text-xs">Save Changes</button>
                 </div>`;
-
-                if(bill.category === 'mobile') { recContainer.innerHTML += card; recCount++; }
-                if(bill.category === 'electricity') { elecContainer.innerHTML += card; elecCount++; }
+                if(bill.category === 'mobile') rec.innerHTML += card; if(bill.category === 'electricity') elec.innerHTML += card;
             });
-
-            document.getElementById('rec-count').innerText = recCount;
-            document.getElementById('elec-count').innerText = elecCount;
         }
 
         window.notifyDad = function() {
-            const checkedBoxes = document.querySelectorAll('.notify-cb:checked');
-            if (checkedBoxes.length === 0) { showToast("Check at least one pending bill!"); return; }
-
-            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-            const selectedBills = window.currentBills.filter(bill => selectedIds.includes(bill.id));
-            
-            let message = `No. Of Pendings:- ${selectedBills.length}\n`;
-            selectedBills.forEach(bill => { message += `${bill.title} - ₹${bill.amount}\n`; });
-
-            // YOUR DAD'S PHONE NUMBER HERE
-            const DAD_PHONE_NUMBER = "919735154326"; 
-            const waUrl = `whatsapp://send?phone=${DAD_PHONE_NUMBER}&text=${encodeURIComponent(message)}`;
-            window.location.href = waUrl;
+            const checked = Array.from(document.querySelectorAll('.notify-cb:checked')).map(cb => cb.value);
+            if (checked.length === 0) { showToast("Check a pending bill!"); return; }
+            const bills = window.currentBills.filter(b => checked.includes(b.id));
+            let msg = `No. Of Pendings:- ${bills.length}\n`; let total = 0;
+            bills.forEach(b => { total += parseFloat(b.amount); msg += `🔹 ${b.title} - ₹${b.amount}\n`; });
+            msg += `\n*Total Due: ₹${total}*`;
+            window.location.href = `whatsapp://send?phone=919735154326&text=${encodeURIComponent(msg)}`; // UPDATE NUMBER
         }
 
         window.addBill = async function() {
-            const category = document.getElementById('new-category').value;
-            const amount = document.getElementById('new-amount').value;
-            const date = document.getElementById('new-date').value;
-            let title = '';
-
-            // Smart Title Generation based on Category
-            if (category === 'mobile') {
-                title = document.getElementById('new-title-mobile').value;
-            } else {
-                const house = document.getElementById('new-house').value;
-                const month = document.getElementById('new-month').value;
-                if (!month) { alert("Month is required for Electricity!"); return; }
-                title = `${house} - ${month}`; // Auto-combines into format "UD - MAIN HOUSE - Jan"
-            }
-
-            if (!title || !amount) { alert("Title and Amount are required!"); return; }
-
-            const { error } = await supabase.from('family_bills').insert([{
-                title, amount, due_date: date, category, status: 'pending'
-            }]);
-
-            if (!error) { 
-                showToast("Entry Saved!"); 
-                document.getElementById('new-title-mobile').value = '';
-                document.getElementById('new-month').value = '';
-                document.getElementById('new-amount').value = '';
-                loadAdmin(); 
-            }
+            const cat = document.getElementById('new-category').value; const amount = document.getElementById('new-amount').value;
+            let title = cat === 'mobile' ? document.getElementById('new-title-mobile').value : `${document.getElementById('new-house').value} - ${document.getElementById('new-month').value}`;
+            if (!title || !amount) return;
+            const { error } = await supabase.from('family_bills').insert([{ title, amount, category: cat, status: 'pending' }]);
+            if (!error) { showToast("Saved!"); loadAdmin(); }
         }
 
         window.updateBill = async function(id) {
-            const amount = document.getElementById(`amt-${id}`).value;
-            const date = document.getElementById(`date-${id}`).value;
-            const status = document.getElementById(`status-${id}`).value;
-            const { error } = await supabase.from('family_bills').update({ amount, due_date: date, status }).eq('id', id);
-            if (!error) { showToast("Updated Successfully!"); loadAdmin(); }
+            const amount = document.getElementById(`amt-${id}`).value; const status = document.getElementById(`status-${id}`).value; const data = document.getElementById(`data-${id}`).value;
+            const { error } = await supabase.from('family_bills').update({ amount, due_date: data, status }).eq('id', id);
+            if (!error) { showToast("Updated!"); loadAdmin(); }
         }
 
-        window.deleteBill = async function(id) {
-            if (confirm("Permanently delete this item?")) {
-                await supabase.from('family_bills').delete().eq('id', id);
-                showToast("Deleted!"); loadAdmin();
-            }
-        }
-        // --- SMART SCANNER LOGIC ---
-        document.getElementById('receipt-upload').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const statusUI = document.getElementById('scanner-status');
-            const resultsUI = document.getElementById('scanned-results');
-            
-            statusUI.classList.remove('hidden');
-            resultsUI.classList.add('hidden');
-
-            try {
-                // Run the OCR Engine
-                const { data: { text } } = await Tesseract.recognize(file, 'eng');
-                console.log("RAW OCR TEXT: \n", text); // Helpful for debugging!
-
-                // 1. Extract BBPS / Txn ID (Looks for 'TXN', 'Transaction', or 'BBPS' followed by alphanumeric)
-                const txMatch = text.match(/(?:TXN|Transaction|BBPS|Ref)[\s\.:-]*([A-Z0-9]{8,20})/i);
-                const extractedTx = txMatch ? txMatch[1] : '';
-
-                // 2. Extract Consumer Number (Looks for 'Consumer', 'Account', 'Id' followed by numbers)
-                const cnumMatch = text.match(/(?:Consumer|Account|Cons)[\sNo\.:-]*(\d{7,15})/i);
-                const extractedCnum = cnumMatch ? cnumMatch[1] : '';
-
-                // 3. Extract Bill Number
-                const bnumMatch = text.match(/(?:Bill)[\sNo\.:-]*(\d{5,15})/i);
-                const extractedBnum = bnumMatch ? bnumMatch[1] : '';
-
-                // 4. Extract Amount (Looks for Rupee symbol or 'Amount' followed by numbers)
-                const amountMatch = text.match(/(?:Amount|Total|Paid|₹|Rs\.?)[\s\.:-]*([\d,]+(?:\.\d{2})?)/i);
-                const extractedAmount = amountMatch ? amountMatch[1].replace(/,/g, '') : '';
-
-                // Fill the UI fields
-                document.getElementById('scan-tx').value = extractedTx;
-                document.getElementById('scan-cnum').value = extractedCnum;
-                document.getElementById('scan-bnum').value = extractedBnum;
-                document.getElementById('scan-amount').value = extractedAmount;
-
-                statusUI.classList.add('hidden');
-                resultsUI.classList.remove('hidden');
-
-            } catch (err) {
-                console.error(err);
-                statusUI.innerHTML = `<span class="material-icons-round text-sm text-red-500">error</span> Failed to scan image.`;
-            }
-        });
-
-        // Helper function to bundle the data so you can easily paste it into your Database updates
-        window.copyToClipboard = function() {
-            const tx = document.getElementById('scan-tx').value;
-            const cnum = document.getElementById('scan-cnum').value;
-            const bnum = document.getElementById('scan-bnum').value;
-            
-            // Format it perfectly for your URL parameters or Supabase description field
-            const combinedString = `Cons: ${cnum} | Bill: ${bnum} | BBPS: ${tx}`;
-            
-            navigator.clipboard.writeText(combinedString);
-            showToast("Details Copied!");
-        }
-        
+        window.deleteBill = async function(id) { if (confirm("Delete?")) { await supabase.from('family_bills').delete().eq('id', id); loadAdmin(); } }
         loadAdmin();
     </script>
 </body>

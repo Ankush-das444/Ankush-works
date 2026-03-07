@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>tailwind.config = { theme: { extend: { colors: { accent: "#3B82F6", "background-light": "#F8FAFC", "card-light": "#FFFFFF" } } } };</script>
     <style>
         body { min-height: 100vh; font-family: 'Inter', sans-serif; } ::-webkit-scrollbar { display: none; }
@@ -15,32 +15,26 @@
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s; z-index: 100; }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .notify-cb { width: 20px; height: 20px; border-radius: 6px; border-color: #CBD5E1; }
+        /* Receipt styles for html2canvas */
+        .receipt-edge { background-image: radial-gradient(#F3F4F6 4px, transparent 4px); background-size: 16px 16px; background-position: -8px -8px; }
+        .data-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #E5E7EB; }
+        .data-row:last-child { border-bottom: none; }
     </style>
 </head>
-<body class="bg-background-light text-slate-900 pb-12">
+<body class="bg-background-light text-slate-900 pb-12 relative">
     
-    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 bg-white/95 sticky top-0 z-50 shadow-sm">
+    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 bg-white/95 sticky top-0 z-40 shadow-sm">
         <h1 class="text-xl font-extrabold flex items-center gap-2"><span class="material-icons-round text-accent">admin_panel_settings</span> Setup</h1>
-        <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200" onclick="notifyDad()"><span class="material-icons-round">send</span></button>
+        <div class="flex gap-2">
+            <button class="flex h-10 px-3 items-center justify-center rounded-xl bg-blue-100 text-blue-600 font-bold text-xs gap-1 hover:bg-blue-200 transition" onclick="openStudio()">
+                <span class="material-icons-round text-sm">receipt_long</span> Studio
+            </button>
+            <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200 transition" onclick="notifyDad()"><span class="material-icons-round">send</span></button>
+        </div>
     </header>
 
     <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-6">
         
-        <section class="bg-card-light rounded-2xl shadow-sm border border-slate-200 p-5">
-            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3"><span class="material-icons-round text-emerald-500">document_scanner</span> OCR Scanner</h2>
-            <input type="file" id="receipt-upload" accept="image/*" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-emerald-50 file:text-emerald-600 mb-3 cursor-pointer">
-            <div id="scanner-status" class="hidden flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 p-3 rounded-lg"><span class="material-icons-round animate-spin">refresh</span> Scanning...</div>
-            
-            <div id="scanned-results" class="hidden mt-3 grid grid-cols-2 gap-2">
-                <input type="text" id="scan-tx" class="input-field py-2 text-xs" placeholder="B Connect Txn ID">
-                <input type="text" id="scan-cname" class="input-field py-2 text-xs" placeholder="Customer Name">
-                <input type="text" id="scan-bp" class="input-field py-2 text-xs" placeholder="Bill Period">
-                <input type="text" id="scan-bdt" class="input-field py-2 text-xs" placeholder="Bill Date">
-                <input type="text" id="scan-ddt" class="input-field py-2 text-xs" placeholder="Due Date">
-                <input type="text" id="scan-am" class="input-field py-2 text-xs" placeholder="Amount">
-            </div>
-        </section>
-
         <section class="bg-card-light rounded-2xl shadow-sm border border-slate-200 p-5">
             <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Add Entry</h2>
             <div class="flex flex-col gap-3">
@@ -50,7 +44,10 @@
                     <select id="new-house" class="input-field w-1/2 font-bold"><option value="MD">MD</option><option value="UD - STORE">UD - STORE</option><option value="UD - MAIN HOUSE">UD - MAIN HOUSE</option></select>
                     <input type="text" id="new-month" class="input-field w-1/2 text-accent font-bold" placeholder="Month (e.g. Jan)">
                 </div>
-                <input type="number" id="new-amount" class="input-field font-bold" placeholder="Amount ₹">
+                <div class="flex gap-2">
+                    <input type="number" id="new-amount" class="input-field w-1/2 font-bold" placeholder="Amount ₹">
+                    <input type="text" id="new-date" class="input-field w-1/2 font-bold text-red-500" placeholder="Due Date (Optional)">
+                </div>
                 <button onclick="addBill()" class="bg-slate-900 text-white font-bold py-3 rounded-xl mt-1 shadow-md">Save to Database</button>
             </div>
         </section>
@@ -60,7 +57,66 @@
 
     </main>
 
-    <div id="toast" class="bg-emerald-500 text-white px-5 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 text-sm"><span id="toast-msg">Success!</span></div>
+    <div id="toast" class="bg-emerald-500 text-white px-5 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 text-sm z-50"><span id="toast-msg">Success!</span></div>
+
+    <div id="receipt-studio" class="fixed inset-0 z-50 hidden bg-white flex-col h-full overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center z-10 shadow-sm">
+            <h2 class="font-bold text-slate-800 flex items-center gap-2"><span class="material-icons-round text-blue-500">receipt_long</span> Receipt Studio</h2>
+            <button onclick="closeStudio()" class="p-2 bg-slate-100 rounded-full text-slate-500"><span class="material-icons-round text-sm">close</span></button>
+        </div>
+        
+        <div class="p-4 flex flex-col gap-3 max-w-md mx-auto w-full">
+            <p class="text-xs text-slate-500 mb-2">Fill the details to generate a downloadable PNG.</p>
+            <input type="text" id="rs-tx" class="input-field" placeholder="B Connect Txn ID">
+            <input type="number" id="rs-am" class="input-field" placeholder="Amount (₹)">
+            <input type="text" id="rs-title" class="input-field" placeholder="Biller Name (e.g. UD - MAIN HOUSE)">
+            <input type="text" id="rs-cname" class="input-field" placeholder="Customer Name">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="rs-bp" class="input-field" placeholder="Bill Period">
+                <input type="text" id="rs-bdt" class="input-field" placeholder="Bill Date">
+                <input type="text" id="rs-ddt" class="input-field" placeholder="Due Date">
+                <input type="text" id="rs-pdt" class="input-field" placeholder="Payment Date" value="Today">
+            </div>
+            
+            <button onclick="generatePng()" class="w-full mt-4 bg-blue-600 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center gap-2">
+                <span class="material-icons-round">image</span> Create & Download PNG
+            </button>
+        </div>
+
+        <div style="position: absolute; left: -9999px; top: 0;">
+            <div id="receipt-canvas" class="w-[400px] bg-white rounded-t-2xl overflow-hidden pb-8 font-sans">
+                <div class="bg-[#0e8f4f] p-8 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
+                        <span class="material-icons-round text-[#0e8f4f] text-4xl" style="font-family: 'Material Icons Round'; font-weight: normal; font-style: normal; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased;">check_circle</span>
+                    </div>
+                    <h1 class="text-white font-extrabold text-2xl tracking-tight">Payment Successful</h1>
+                    <p class="text-emerald-100 font-semibold text-xs mt-1 tracking-widest uppercase">BharatConnect (BBPS)</p>
+                </div>
+                <div class="px-8 pt-8 pb-4 text-center">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Transaction Amount</p>
+                    <h2 id="render-am" class="text-5xl font-extrabold text-slate-900 tracking-tighter">₹0</h2>
+                </div>
+                <div class="px-8 py-2 flex flex-col">
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Customer Name</span><span id="render-cname" class="text-slate-900 font-bold max-w-[60%] text-right">-</span></div>
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Biller</span><span id="render-title" class="text-slate-900 font-bold">-</span></div>
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Bill Period</span><span id="render-bp" class="text-slate-900 font-bold">-</span></div>
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Bill Date</span><span id="render-bdt" class="text-slate-900 font-bold">-</span></div>
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Due Date</span><span id="render-ddt" class="text-slate-900 font-bold">-</span></div>
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Payment Mode</span><span class="text-slate-900 font-bold">EG Payments</span></div>
+                    <div class="data-row"><span class="text-slate-500 text-sm font-medium">Date of Payment</span><span id="render-pdt" class="text-slate-900 font-bold">-</span></div>
+                </div>
+                <div class="mx-8 mt-4 mb-2 bg-slate-50 rounded-xl p-4 border border-slate-200">
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1 text-center">B Connect Txn ID</p>
+                    <p id="render-tx" class="text-slate-900 font-mono font-bold text-center tracking-tight text-sm">-</p>
+                </div>
+                <div class="mt-8 flex justify-center items-center gap-1.5 opacity-40">
+                    <span class="material-icons-round text-[14px]" style="font-family: 'Material Icons Round';">verified_user</span>
+                    <span class="text-[10px] font-bold tracking-widest uppercase">Sednium Systems</span>
+                </div>
+                <div class="w-full h-4 receipt-edge mt-8"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
         function toggleInputFields() {
@@ -68,7 +124,44 @@
             if (cat === 'electricity') { document.getElementById('new-title-mobile').classList.add('hidden'); document.getElementById('field-elec-title').classList.remove('hidden'); document.getElementById('field-elec-title').classList.add('flex'); } 
             else { document.getElementById('new-title-mobile').classList.remove('hidden'); document.getElementById('field-elec-title').classList.add('hidden'); document.getElementById('field-elec-title').classList.remove('flex'); }
         }
-        function toggleEdit(id) { document.getElementById(`edit-${id}`).classList.toggle('hidden'); }
+        
+        function openStudio() { 
+            document.getElementById('receipt-studio').classList.remove('hidden'); 
+            document.getElementById('receipt-studio').classList.add('flex'); 
+            document.body.style.overflow = 'hidden';
+            if(document.getElementById('rs-pdt').value === 'Today') document.getElementById('rs-pdt').value = new Date().toLocaleDateString('en-IN');
+        }
+        
+        function closeStudio() { 
+            document.getElementById('receipt-studio').classList.add('hidden'); 
+            document.getElementById('receipt-studio').classList.remove('flex'); 
+            document.body.style.overflow = 'auto'; 
+        }
+
+        // GENERATE PNG LOGIC
+        function generatePng() {
+            // Populate the hidden template
+            document.getElementById('render-tx').innerText = document.getElementById('rs-tx').value || 'N/A';
+            document.getElementById('render-am').innerText = `₹${document.getElementById('rs-am').value || '0'}`;
+            document.getElementById('render-title').innerText = document.getElementById('rs-title').value || 'N/A';
+            document.getElementById('render-cname').innerText = document.getElementById('rs-cname').value || 'N/A';
+            document.getElementById('render-bp').innerText = document.getElementById('rs-bp').value || 'N/A';
+            document.getElementById('render-bdt').innerText = document.getElementById('rs-bdt').value || 'N/A';
+            document.getElementById('render-ddt').innerText = document.getElementById('rs-ddt').value || 'N/A';
+            document.getElementById('render-pdt').innerText = document.getElementById('rs-pdt').value || 'N/A';
+
+            const canvasElement = document.getElementById('receipt-canvas');
+            const originalPb = canvasElement.style.paddingBottom;
+            canvasElement.style.paddingBottom = "32px"; // Give room for zig-zag
+
+            html2canvas(canvasElement, { scale: 3, useCORS: true, backgroundColor: "#F3F4F6" }).then(canvas => {
+                canvasElement.style.paddingBottom = originalPb;
+                const link = document.createElement('a');
+                link.download = `Receipt_${document.getElementById('rs-tx').value || 'Generated'}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
     </script>
 
     <script type="module">
@@ -78,31 +171,6 @@
         function showToast(msg) { document.getElementById('toast-msg').innerText = msg; document.getElementById('toast').classList.add('show'); setTimeout(() => document.getElementById('toast').classList.remove('show'), 3000); }
 
         window.currentBills = [];
-
-        document.getElementById('receipt-upload').addEventListener('change', async (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            document.getElementById('scanner-status').classList.remove('hidden'); document.getElementById('scanned-results').classList.add('hidden');
-            try {
-                const { data: { text } } = await Tesseract.recognize(file, 'eng');
-                
-                const txMatch = text.match(/(?:Txn|Transaction|BBPS|Ref|Connect)[\s\.:-]*([A-Z0-9]{8,22})/i);
-                const nameMatch = text.match(/(?:Customer|Name)[\s\.:-]*([A-Za-z\s]{3,20})/i);
-                const bpMatch = text.match(/(?:Period)[\s\.:-]*([A-Za-z]{3,9}\s*[-to]*\s*[A-Za-z]{3,9}|\w+\s*\d{4})/i);
-                const bdtMatch = text.match(/(?:Bill Date|Date)[\s\.:-]*([\d]{1,2}[/-][\w]{2,9}[/-][\d]{2,4})/i);
-                const ddtMatch = text.match(/(?:Due Date|Due)[\s\.:-]*([\d]{1,2}[/-][\w]{2,9}[/-][\d]{2,4})/i);
-                const amMatch = text.match(/(?:Amount|Total)[\s\.:-]*₹?\s*([\d,\.]+)/i);
-                
-                document.getElementById('scan-tx').value = txMatch ? txMatch[1] : '';
-                document.getElementById('scan-cname').value = nameMatch ? nameMatch[1].trim() : '';
-                document.getElementById('scan-bp').value = bpMatch ? bpMatch[1] : '';
-                document.getElementById('scan-bdt').value = bdtMatch ? bdtMatch[1] : '';
-                document.getElementById('scan-ddt').value = ddtMatch ? ddtMatch[1] : '';
-                document.getElementById('scan-am').value = amMatch ? amMatch[1] : '';
-                
-                document.getElementById('scanner-status').classList.add('hidden'); document.getElementById('scanned-results').classList.remove('hidden');
-                showToast("Data Extracted! Type directly into fields.");
-            } catch (err) { alert("Scan failed."); document.getElementById('scanner-status').classList.add('hidden'); }
-        });
 
         window.loadAdmin = async function() {
             const { data, error } = await supabase.from('family_bills').select('*').order('id');
@@ -114,33 +182,18 @@
             data.forEach(bill => {
                 const isPaid = bill.status === 'paid';
                 const cb = !isPaid ? `<input type="checkbox" value="${bill.id}" class="notify-cb bg-white border-slate-300">` : ``;
-                
-                let rData = { tx: "", cname: "", ddt: "", bdt: "", bp: "", mode: "EG Payments", am: bill.amount, pdt: new Date().toLocaleDateString('en-IN') };
-                if (bill.due_date && bill.due_date.startsWith('{')) { try { rData = JSON.parse(bill.due_date); } catch(e){} }
 
                 const card = `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-col gap-3 shadow-sm">
                     <div class="flex justify-between items-center"><div class="flex items-center gap-2">${cb}<h4 class="font-bold text-slate-900 text-sm">${bill.title}</h4></div><button onclick="deleteBill('${bill.id}')" class="text-red-500 material-icons-round text-sm hover:bg-red-50 p-1 rounded-full">delete</button></div>
                     
-                    <div class="flex justify-between gap-2 mt-1">
-                        <select id="status-${bill.id}" class="input-field py-1.5 px-2 text-xs w-1/2 font-bold"><option value="pending" ${!isPaid?'selected':''}>Pending</option><option value="paid" ${isPaid?'selected':''}>Paid</option></select>
-                        <button onclick="toggleEdit('${bill.id}')" class="w-1/2 bg-blue-50 text-blue-600 font-bold py-1.5 rounded-lg text-xs border border-blue-100">Edit Details ▼</button>
+                    <div class="grid grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="amt-${bill.id}" value="${bill.amount}" class="input-field py-1.5 px-2 text-xs bg-white" placeholder="Amount ₹">
+                        <input type="text" id="date-${bill.id}" value="${bill.due_date || ''}" class="input-field py-1.5 px-2 text-xs bg-white" placeholder="Due Date">
+                        <select id="status-${bill.id}" class="input-field py-1.5 px-2 text-xs bg-white font-bold"><option value="pending" ${!isPaid?'selected':''}>Pending</option><option value="paid" ${isPaid?'selected':''}>Paid</option></select>
                     </div>
 
-                    <div id="edit-${bill.id}" class="hidden flex flex-col gap-2 mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="tx-${bill.id}" value="${rData.tx}" class="input-field py-1.5 text-xs bg-white" placeholder="Txn ID">
-                            <input type="text" id="cname-${bill.id}" value="${rData.cname}" class="input-field py-1.5 text-xs bg-white" placeholder="Customer Name">
-                            <input type="text" id="bdt-${bill.id}" value="${rData.bdt}" class="input-field py-1.5 text-xs bg-white" placeholder="Bill Date">
-                            <input type="text" id="ddt-${bill.id}" value="${rData.ddt}" class="input-field py-1.5 text-xs bg-white" placeholder="Due Date">
-                            <input type="text" id="bp-${bill.id}" value="${rData.bp}" class="input-field py-1.5 text-xs bg-white" placeholder="Bill Period">
-                            <input type="text" id="mode-${bill.id}" value="${rData.mode}" class="input-field py-1.5 text-xs bg-white" placeholder="Mode">
-                            <input type="number" id="am-${bill.id}" value="${rData.am}" class="input-field py-1.5 text-xs bg-white" placeholder="Amount ₹">
-                            <input type="text" id="pdt-${bill.id}" value="${rData.pdt}" class="input-field py-1.5 text-xs bg-white" placeholder="Payment Date">
-                        </div>
-                    </div>
-
-                    <button onclick="updateBill('${bill.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs mt-1 transition shadow-sm">Save & Sync</button>
+                    <button onclick="updateBill('${bill.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs mt-1 transition shadow-sm border border-slate-200">Save Changes</button>
                 </div>`;
                 if(bill.category === 'mobile') rec.innerHTML += card; if(bill.category === 'electricity') elec.innerHTML += card;
             });
@@ -157,27 +210,23 @@
         }
 
         window.addBill = async function() {
-            const cat = document.getElementById('new-category').value; const amount = document.getElementById('new-amount').value;
+            const cat = document.getElementById('new-category').value; 
+            const amount = document.getElementById('new-amount').value;
+            const date = document.getElementById('new-date').value;
             let title = cat === 'mobile' ? document.getElementById('new-title-mobile').value : `${document.getElementById('new-house').value} - ${document.getElementById('new-month').value}`;
+            
             if (!title || !amount) return;
-            const { error } = await supabase.from('family_bills').insert([{ title, amount, category: cat, status: 'pending' }]);
+            const { error } = await supabase.from('family_bills').insert([{ title, amount, due_date: date, category: cat, status: 'pending' }]);
             if (!error) { showToast("Saved!"); loadAdmin(); }
         }
 
         window.updateBill = async function(id) {
+            const amount = document.getElementById(`amt-${id}`).value;
             const status = document.getElementById(`status-${id}`).value;
-            const recData = {
-                tx: document.getElementById(`tx-${id}`).value,
-                cname: document.getElementById(`cname-${id}`).value,
-                bdt: document.getElementById(`bdt-${id}`).value,
-                ddt: document.getElementById(`ddt-${id}`).value,
-                bp: document.getElementById(`bp-${id}`).value,
-                mode: document.getElementById(`mode-${id}`).value,
-                am: document.getElementById(`am-${id}`).value,
-                pdt: document.getElementById(`pdt-${id}`).value
-            };
-            const { error } = await supabase.from('family_bills').update({ amount: recData.am, due_date: JSON.stringify(recData), status }).eq('id', id);
-            if (!error) { showToast("Synced!"); loadAdmin(); }
+            const date = document.getElementById(`date-${id}`).value;
+
+            const { error } = await supabase.from('family_bills').update({ amount, due_date: date, status }).eq('id', id);
+            if (!error) { showToast("Updated!"); loadAdmin(); }
         }
 
         window.deleteBill = async function(id) { if (confirm("Delete?")) { await supabase.from('family_bills').delete().eq('id', id); loadAdmin(); } }

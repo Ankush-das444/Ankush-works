@@ -23,7 +23,14 @@ export default function handler(req, res) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>body { font-family: 'Inter', sans-serif; background-color: #0B1120; color: white; min-height: 100dvh; }</style>
+                <style>
+            body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #0F172A; min-height: 100dvh; }
+            .bg-\[\#111827\] { background-color: #FFFFFF !important; }
+            .bg-\[\#1F2937\] { background-color: #F1F5F9 !important; }
+            .border-gray-800, .border-gray-700 { border-color: #E2E8F0 !important; }
+            .text-white:not(.bg-\[\#2563EB\]):not(.bg-emerald-600) { color: #0F172A !important; }
+            .text-gray-400 { color: #64748B !important; }
+        </style>
     </head>
     <body class="flex flex-col items-center justify-between py-8 px-4">
         

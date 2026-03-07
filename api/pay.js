@@ -1,7 +1,6 @@
 export default function handler(req, res) {
     const amount = req.query.am || '0.00';
     const note = req.query.tn || 'Family Hub Payment';
-    const recUrl = req.query.rec || '#'; 
     
     const UPI_ID = "ankushz0@ptyes"; 
     const PAYEE_NAME = "Ankush Das";
@@ -69,14 +68,9 @@ export default function handler(req, res) {
                 <a href="${genericUpiIntent}" class="w-full bg-[#2563EB] hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition flex justify-center">Other UPI Apps</a>
             </div>
 
-            <div class="w-full flex gap-3 mt-6">
-                <button onclick="window.history.back()" class="w-1/2 bg-white text-slate-700 font-bold py-4 rounded-xl border border-slate-200 shadow-sm active:scale-95 transition flex justify-center items-center">
-                    Later
-                </button>
-                <a href="${recUrl}" class="w-1/2 bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center gap-2">
-                    <span class="material-icons-round text-[18px]">receipt_long</span> Receipt
-                </a>
-            </div>
+            <button onclick="window.history.back()" class="w-full mt-6 bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center gap-2">
+                <span class="material-icons-round text-[18px]">check_circle</span> I've Completed the Payment
+            </button>
         </div>
     </body>
     </html>

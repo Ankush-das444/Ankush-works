@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Admin | Command Center</title>
@@ -7,31 +7,29 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { accent: "#3B82F6", "background-dark": "#0B1120", "card-dark": "#1E293B" } } } };</script>
+    <script>tailwind.config = { theme: { extend: { colors: { accent: "#3B82F6", "background-light": "#F8FAFC", "card-light": "#FFFFFF" } } } };</script>
     <style>
-                /* --- FORCE LIGHT THEME OVERRIDE --- */
-        body, .bg-background-dark { background-color: #F8FAFC !important; color: #0F172A !important; }
-        .bg-card-dark, .bg-slate-800 { background-color: #FFFFFF !important; }
-        .bg-slate-800\/50 { background-color: #F1F5F9 !important; }
-        .border-slate-800, .border-slate-700 { border-color: #E2E8F0 !important; }
-        .text-white:not(.bg-accent):not(.bg-blue-600):not(.bg-emerald-600) { color: #0F172A !important; }
-        .text-slate-400, .text-slate-300 { color: #64748B !important; }
-        .input-field { background-color: #FFFFFF !important; color: #0F172A !important; border-color: #CBD5E1 !important; }
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; } ::-webkit-scrollbar { display: none; }
+        .input-field { width: 100%; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 1px solid #E2E8F0; background-color: #F8FAFC; color: #0F172A; outline: none; transition: 0.2s;}
+        .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); background-color: #FFFFFF;}
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s; z-index: 100; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .notify-cb { width: 20px; height: 20px; border-radius: 6px; border-color: #CBD5E1; }
     </style>
 </head>
-<body class="bg-background-dark text-white pb-12">
+<body class="bg-background-light text-slate-900 pb-12">
     
-    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-800 bg-background-dark/95 sticky top-0 z-50">
+    <header class="px-6 py-5 flex justify-between items-center border-b border-slate-200 bg-white/95 sticky top-0 z-50 shadow-sm">
         <h1 class="text-xl font-extrabold flex items-center gap-2"><span class="material-icons-round text-accent">admin_panel_settings</span> Setup</h1>
-        <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900/30 text-emerald-400" onclick="notifyDad()"><span class="material-icons-round">send</span></button>
+        <button class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200" onclick="notifyDad()"><span class="material-icons-round">send</span></button>
     </header>
 
     <main class="flex-1 px-4 pt-6 max-w-lg w-full mx-auto flex flex-col gap-6">
         
-        <section class="bg-card-dark rounded-2xl shadow-sm border border-slate-800 p-5">
-            <h2 class="text-sm font-bold text-white flex items-center gap-2 mb-3"><span class="material-icons-round text-emerald-500">document_scanner</span> OCR Scanner</h2>
-            <input type="file" id="receipt-upload" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-emerald-900/30 file:text-emerald-400 mb-3 cursor-pointer">
-            <div id="scanner-status" class="hidden flex items-center gap-2 text-xs font-bold text-blue-400 bg-blue-900/20 p-3 rounded-lg"><span class="material-icons-round animate-spin">refresh</span> Scanning...</div>
+        <section class="bg-card-light rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-3"><span class="material-icons-round text-emerald-500">document_scanner</span> OCR Scanner</h2>
+            <input type="file" id="receipt-upload" accept="image/*" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-emerald-50 file:text-emerald-600 mb-3 cursor-pointer">
+            <div id="scanner-status" class="hidden flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 p-3 rounded-lg"><span class="material-icons-round animate-spin">refresh</span> Scanning...</div>
             
             <div id="scanned-results" class="hidden mt-3 grid grid-cols-2 gap-2">
                 <input type="text" id="scan-tx" class="input-field py-2 text-xs" placeholder="B Connect Txn ID">
@@ -43,22 +41,22 @@
             </div>
         </section>
 
-        <section class="bg-card-dark rounded-2xl shadow-sm border border-slate-800 p-5">
-            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Add Entry</h2>
+        <section class="bg-card-light rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Add Entry</h2>
             <div class="flex flex-col gap-3">
-                <select id="new-category" class="input-field text-accent" onchange="toggleInputFields()"><option value="mobile">📱 Mobile</option><option value="electricity">⚡ Electricity</option></select>
+                <select id="new-category" class="input-field text-accent font-bold" onchange="toggleInputFields()"><option value="mobile">📱 Mobile</option><option value="electricity">⚡ Electricity</option></select>
                 <input type="text" id="new-title-mobile" class="input-field" placeholder="Recharge Name">
                 <div id="field-elec-title" class="hidden flex gap-2">
-                    <select id="new-house" class="input-field w-1/2"><option value="MD">MD</option><option value="UD - STORE">UD - STORE</option><option value="UD - MAIN HOUSE">UD - MAIN HOUSE</option></select>
-                    <input type="text" id="new-month" class="input-field w-1/2 text-accent" placeholder="Month (e.g. Jan)">
+                    <select id="new-house" class="input-field w-1/2 font-bold"><option value="MD">MD</option><option value="UD - STORE">UD - STORE</option><option value="UD - MAIN HOUSE">UD - MAIN HOUSE</option></select>
+                    <input type="text" id="new-month" class="input-field w-1/2 text-accent font-bold" placeholder="Month (e.g. Jan)">
                 </div>
-                <input type="number" id="new-amount" class="input-field" placeholder="Amount ₹">
-                <button onclick="addBill()" class="bg-white text-slate-900 font-bold py-3 rounded-xl mt-1">Save to Database</button>
+                <input type="number" id="new-amount" class="input-field font-bold" placeholder="Amount ₹">
+                <button onclick="addBill()" class="bg-slate-900 text-white font-bold py-3 rounded-xl mt-1 shadow-md">Save to Database</button>
             </div>
         </section>
 
-        <section><h3 class="text-sm font-bold text-slate-400 uppercase mb-3">📱 Recharges</h3><div id="admin-recharges" class="flex flex-col gap-3"></div></section>
-        <section><h3 class="text-sm font-bold text-slate-400 uppercase mb-3">⚡ Electricity</h3><div id="admin-electricity" class="flex flex-col gap-3"></div></section>
+        <section><h3 class="text-sm font-bold text-slate-500 uppercase mb-3 px-1">📱 Recharges</h3><div id="admin-recharges" class="flex flex-col gap-3"></div></section>
+        <section><h3 class="text-sm font-bold text-slate-500 uppercase mb-3 px-1">⚡ Electricity</h3><div id="admin-electricity" class="flex flex-col gap-3"></div></section>
 
     </main>
 
@@ -70,9 +68,7 @@
             if (cat === 'electricity') { document.getElementById('new-title-mobile').classList.add('hidden'); document.getElementById('field-elec-title').classList.remove('hidden'); document.getElementById('field-elec-title').classList.add('flex'); } 
             else { document.getElementById('new-title-mobile').classList.remove('hidden'); document.getElementById('field-elec-title').classList.add('hidden'); document.getElementById('field-elec-title').classList.remove('flex'); }
         }
-        function toggleEdit(id) {
-            document.getElementById(`edit-${id}`).classList.toggle('hidden');
-        }
+        function toggleEdit(id) { document.getElementById(`edit-${id}`).classList.toggle('hidden'); }
     </script>
 
     <script type="module">
@@ -83,7 +79,6 @@
 
         window.currentBills = [];
 
-        // --- OCR Engine for the 8 Fields ---
         document.getElementById('receipt-upload').addEventListener('change', async (e) => {
             const file = e.target.files[0]; if (!file) return;
             document.getElementById('scanner-status').classList.remove('hidden'); document.getElementById('scanned-results').classList.add('hidden');
@@ -118,37 +113,34 @@
             
             data.forEach(bill => {
                 const isPaid = bill.status === 'paid';
-                const cb = !isPaid ? `<input type="checkbox" value="${bill.id}" class="notify-cb bg-slate-800">` : ``;
+                const cb = !isPaid ? `<input type="checkbox" value="${bill.id}" class="notify-cb bg-white border-slate-300">` : ``;
                 
-                // Unpack JSON State
                 let rData = { tx: "", cname: "", ddt: "", bdt: "", bp: "", mode: "EG Payments", am: bill.amount, pdt: new Date().toLocaleDateString('en-IN') };
-                if (bill.due_date && bill.due_date.startsWith('{')) {
-                    try { rData = JSON.parse(bill.due_date); } catch(e){}
-                }
+                if (bill.due_date && bill.due_date.startsWith('{')) { try { rData = JSON.parse(bill.due_date); } catch(e){} }
 
                 const card = `
-                <div class="bg-card-dark p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
-                    <div class="flex justify-between items-center"><div class="flex items-center gap-2">${cb}<h4 class="font-bold text-sm">${bill.title}</h4></div><button onclick="deleteBill('${bill.id}')" class="text-red-500 material-icons-round text-sm">delete</button></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-col gap-3 shadow-sm">
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2">${cb}<h4 class="font-bold text-slate-900 text-sm">${bill.title}</h4></div><button onclick="deleteBill('${bill.id}')" class="text-red-500 material-icons-round text-sm hover:bg-red-50 p-1 rounded-full">delete</button></div>
                     
-                    <div class="flex justify-between gap-2 mt-2">
-                        <select id="status-${bill.id}" class="input-field py-1.5 px-2 text-xs w-1/2"><option value="pending" ${!isPaid?'selected':''}>Pending</option><option value="paid" ${isPaid?'selected':''}>Paid</option></select>
-                        <button onclick="toggleEdit('${bill.id}')" class="w-1/2 bg-slate-800 text-blue-400 font-bold py-1.5 rounded-lg text-xs border border-slate-700">Edit Details ▼</button>
+                    <div class="flex justify-between gap-2 mt-1">
+                        <select id="status-${bill.id}" class="input-field py-1.5 px-2 text-xs w-1/2 font-bold"><option value="pending" ${!isPaid?'selected':''}>Pending</option><option value="paid" ${isPaid?'selected':''}>Paid</option></select>
+                        <button onclick="toggleEdit('${bill.id}')" class="w-1/2 bg-blue-50 text-blue-600 font-bold py-1.5 rounded-lg text-xs border border-blue-100">Edit Details ▼</button>
                     </div>
 
-                    <div id="edit-${bill.id}" class="hidden flex flex-col gap-2 mt-2 p-3 bg-slate-900 rounded-lg border border-slate-800">
+                    <div id="edit-${bill.id}" class="hidden flex flex-col gap-2 mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="tx-${bill.id}" value="${rData.tx}" class="input-field py-1.5 text-xs" placeholder="Txn ID">
-                            <input type="text" id="cname-${bill.id}" value="${rData.cname}" class="input-field py-1.5 text-xs" placeholder="Customer Name">
-                            <input type="text" id="bdt-${bill.id}" value="${rData.bdt}" class="input-field py-1.5 text-xs" placeholder="Bill Date">
-                            <input type="text" id="ddt-${bill.id}" value="${rData.ddt}" class="input-field py-1.5 text-xs" placeholder="Due Date">
-                            <input type="text" id="bp-${bill.id}" value="${rData.bp}" class="input-field py-1.5 text-xs" placeholder="Bill Period">
-                            <input type="text" id="mode-${bill.id}" value="${rData.mode}" class="input-field py-1.5 text-xs" placeholder="Mode">
-                            <input type="number" id="am-${bill.id}" value="${rData.am}" class="input-field py-1.5 text-xs" placeholder="Amount ₹">
-                            <input type="text" id="pdt-${bill.id}" value="${rData.pdt}" class="input-field py-1.5 text-xs" placeholder="Payment Date">
+                            <input type="text" id="tx-${bill.id}" value="${rData.tx}" class="input-field py-1.5 text-xs bg-white" placeholder="Txn ID">
+                            <input type="text" id="cname-${bill.id}" value="${rData.cname}" class="input-field py-1.5 text-xs bg-white" placeholder="Customer Name">
+                            <input type="text" id="bdt-${bill.id}" value="${rData.bdt}" class="input-field py-1.5 text-xs bg-white" placeholder="Bill Date">
+                            <input type="text" id="ddt-${bill.id}" value="${rData.ddt}" class="input-field py-1.5 text-xs bg-white" placeholder="Due Date">
+                            <input type="text" id="bp-${bill.id}" value="${rData.bp}" class="input-field py-1.5 text-xs bg-white" placeholder="Bill Period">
+                            <input type="text" id="mode-${bill.id}" value="${rData.mode}" class="input-field py-1.5 text-xs bg-white" placeholder="Mode">
+                            <input type="number" id="am-${bill.id}" value="${rData.am}" class="input-field py-1.5 text-xs bg-white" placeholder="Amount ₹">
+                            <input type="text" id="pdt-${bill.id}" value="${rData.pdt}" class="input-field py-1.5 text-xs bg-white" placeholder="Payment Date">
                         </div>
                     </div>
 
-                    <button onclick="updateBill('${bill.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs mt-1 transition">Save & Sync</button>
+                    <button onclick="updateBill('${bill.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs mt-1 transition shadow-sm">Save & Sync</button>
                 </div>`;
                 if(bill.category === 'mobile') rec.innerHTML += card; if(bill.category === 'electricity') elec.innerHTML += card;
             });
@@ -174,8 +166,6 @@
 
         window.updateBill = async function(id) {
             const status = document.getElementById(`status-${id}`).value;
-            
-            // Collect all 8 fields into JSON
             const recData = {
                 tx: document.getElementById(`tx-${id}`).value,
                 cname: document.getElementById(`cname-${id}`).value,
@@ -186,14 +176,7 @@
                 am: document.getElementById(`am-${id}`).value,
                 pdt: document.getElementById(`pdt-${id}`).value
             };
-            
-            // Save JSON to due_date column, and update main amount column
-            const { error } = await supabase.from('family_bills').update({ 
-                amount: recData.am, 
-                due_date: JSON.stringify(recData), 
-                status 
-            }).eq('id', id);
-            
+            const { error } = await supabase.from('family_bills').update({ amount: recData.am, due_date: JSON.stringify(recData), status }).eq('id', id);
             if (!error) { showToast("Synced!"); loadAdmin(); }
         }
 

@@ -33,7 +33,7 @@ export default function handler(req, res) {
             </div>
 
             <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6 shadow-inner border border-blue-200">
-                <img src="https://icon-flow-pi.vercel.app/api/render?q=account_balance_wallet&color=3B82F6&size=32" alt="Wallet">
+                <img src="https://icon-flow-pi.vercel.app/api/render?q=wallet&color=3B82F6&size=32" alt="Wallet">
             </div>
             
             <h1 class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">Payment Request</h1>

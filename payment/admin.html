@@ -9,12 +9,14 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { accent: "#3B82F6", "background-dark": "#0B1120", "card-dark": "#1E293B" } } } };</script>
     <style>
-        body { min-height: 100vh; font-family: 'Inter', sans-serif; } ::-webkit-scrollbar { display: none; }
-        .input-field { width: 100%; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 1px solid #334155; background-color: #0F172A; color: white; outline: none; }
-        .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); opacity: 0; transition: all 0.3s; z-index: 100; }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .notify-cb { width: 20px; height: 20px; border-radius: 6px; }
+                /* --- FORCE LIGHT THEME OVERRIDE --- */
+        body, .bg-background-dark { background-color: #F8FAFC !important; color: #0F172A !important; }
+        .bg-card-dark, .bg-slate-800 { background-color: #FFFFFF !important; }
+        .bg-slate-800\/50 { background-color: #F1F5F9 !important; }
+        .border-slate-800, .border-slate-700 { border-color: #E2E8F0 !important; }
+        .text-white:not(.bg-accent):not(.bg-blue-600):not(.bg-emerald-600) { color: #0F172A !important; }
+        .text-slate-400, .text-slate-300 { color: #64748B !important; }
+        .input-field { background-color: #FFFFFF !important; color: #0F172A !important; border-color: #CBD5E1 !important; }
     </style>
 </head>
 <body class="bg-background-dark text-white pb-12">

@@ -92,7 +92,17 @@
         </div>
 
         <div id="view-electricity" class="view-container hidden flex flex-col gap-4">
-            <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">Registered Houses</h3>
+            <div class="flex items-center justify-between px-1">
+                <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registered Houses</h3>
+                
+                <select id="house-filter" onchange="renderElectricity()" class="text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg px-3 py-2 border-none outline-none focus:ring-2 focus:ring-accent cursor-pointer shadow-sm">
+                    <option value="ALL">All Houses</option>
+                    <option value="MD">MD</option>
+                    <option value="UD - STORE">UD - STORE</option>
+                    <option value="UD - MAIN HOUSE">UD - MAIN HOUSE</option>
+                </select>
+            </div>
+            
             <div id="electricity-list" class="flex flex-col gap-3"></div>
         </div>
 
@@ -145,14 +155,11 @@
             document.documentElement.classList.add('dark')
         } else { document.documentElement.classList.remove('dark') }
 
-        // --- THE SPA ROUTER LOGIC ---
         function showView(viewId) {
-            // 1. Hide all views
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-recharge').classList.add('hidden');
             document.getElementById('view-electricity').classList.add('hidden');
             
-            // 2. Set Header and Back Button
             const btnBack = document.getElementById('btn-back');
             const title = document.getElementById('header-title');
             const subtitle = document.getElementById('header-subtitle');
@@ -172,6 +179,9 @@
                 title.innerText = 'Electricity';
                 subtitle.innerText = 'Postpaid House Bills';
                 document.getElementById('view-electricity').classList.remove('hidden');
+                // Optional: Reset filter to ALL when entering view
+                document.getElementById('house-filter').value = "ALL";
+                if(window.renderElectricity) window.renderElectricity(); 
             }
         }
     </script>
@@ -184,7 +194,6 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6d2p6cHdoanBrd2JuZXZ5bGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDA1MzEsImV4cCI6MjA4NzA3NjUzMX0.3p7DkH9IqClw8P_FbAUJnCaX6jflsb9HchbHDnd3J1M'
         );
 
-        // UPDATE TO YOUR LIVE API
         const VERCEL_API_URL = "https://ankush-worksltd.vercel.app/api/pay";
 
         window.billsData = [];
@@ -257,31 +266,86 @@
                 </div>`;
             });
 
-            // --- RENDER ELECTRICITY POSTPAID (3 HOUSES) ---
+            // Trigger the initial electricity render
+            window.renderElectricity();
+        }
+
+        // --- NEW REAL-TIME ELECTRICITY RENDERER WITH FILTERING ---
+        window.renderElectricity = function() {
             const elecList = document.getElementById('electricity-list');
             elecList.innerHTML = '';
             
+            // Get the current selected filter value (ALL, MD, etc.)
+            const filterVal = document.getElementById('house-filter').value;
+            
+            // Start with all electricity bills
+            let electricity = window.billsData.filter(b => b.category === 'electricity');
+            
+            // Apply the filter if it's not 'ALL'
+            if (filterVal !== 'ALL') {
+                // Since our titles are generated as "MD - Jan", we can filter by checking if it starts with the house name
+                electricity = electricity.filter(b => b.title.startsWith(filterVal));
+            }
+
             if (electricity.length === 0) {
-                elecList.innerHTML = `<p class="text-sm text-slate-500 text-center py-2">No electricity bills currently registered.</p>`;
+                elecList.innerHTML = `
+                    <div class="text-center py-8 bg-card-light dark:bg-card-dark rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                        <span class="material-icons-round text-4xl text-slate-300 dark:text-slate-600 mb-2">inbox</span>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">No bills found for this selection.</p>
+                    </div>`;
+                return;
             }
 
             electricity.forEach((bill) => {
                 const isPaid = bill.status === 'paid';
                 const opacityClass = isPaid ? 'opacity-60 grayscale-[30%]' : '';
                 
+                // Parse "UD - MAIN HOUSE - Jan" back into House & Month
+                let houseName = bill.title;
+                let monthText = "Current Month";
+                
+                if (bill.title.includes(' - ')) {
+                    const lastDash = bill.title.lastIndexOf(' - ');
+                    houseName = bill.title.substring(0, lastDash).trim();
+                    monthText = bill.title.substring(lastDash + 3).trim();
+                }
+
+                // Auto Color Coding for the 3 Houses
+                let colorClass = 'bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800/50';
+                let iconColor = 'text-yellow-600 dark:text-yellow-400';
+                let iconBg = 'bg-yellow-100 dark:bg-yellow-900/30';
+
+                if (!isPaid) {
+                    if (houseName === 'MD') {
+                        colorClass = 'bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800/50';
+                        iconColor = 'text-purple-600 dark:text-purple-400'; iconBg = 'bg-purple-100 dark:bg-purple-900/30';
+                    } else if (houseName === 'UD - STORE') {
+                        colorClass = 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/50';
+                        iconColor = 'text-blue-600 dark:text-blue-400'; iconBg = 'bg-blue-100 dark:bg-blue-900/30';
+                    } else if (houseName === 'UD - MAIN HOUSE') {
+                        colorClass = 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/50';
+                        iconColor = 'text-emerald-600 dark:text-emerald-400'; iconBg = 'bg-emerald-100 dark:bg-emerald-900/30';
+                    }
+                } else {
+                    colorClass = 'bg-card-light dark:bg-slate-800/50 border-slate-100 dark:border-slate-800';
+                    iconColor = 'text-slate-500'; iconBg = 'bg-slate-100 dark:bg-slate-800';
+                }
+                
                 const actionHtml = isPaid 
                     ? `<span class="h-10 px-4 flex items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold text-sm"><span class="material-icons-round text-sm mr-1">check_circle</span> Settled</span>`
-                    : `<button onclick="openModal('${bill.id}')" class="h-10 px-4 flex items-center justify-center rounded-lg bg-yellow-500 text-yellow-950 font-bold text-sm shadow-md active:scale-95 transition">Pay</button>`;
-
-                // If you use the description field in Admin for Consumer ID, it displays here
-                const consumerIdText = bill.description ? bill.description : 'Consumer ID: Pending';
+                    : `<button onclick="openModal('${bill.id}')" class="h-10 px-4 flex items-center justify-center rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm shadow-md active:scale-95 transition">Pay</button>`;
 
                 elecList.innerHTML += `
-                <div class="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-yellow-50/50 dark:bg-yellow-900/10 ${opacityClass}">
-                    <div>
-                        <p class="font-bold text-slate-900 dark:text-white">${bill.title}</p>
-                        <p class="text-xs font-semibold text-slate-500 mt-0.5">${consumerIdText}</p>
-                        <p class="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-wider">Due: ${bill.due_date || 'N/A'}</p>
+                <div class="flex items-center justify-between p-4 rounded-xl border ${colorClass} ${opacityClass}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center ${iconBg} ${iconColor} shadow-inner shrink-0">
+                            <span class="material-icons-round text-[20px]">home</span>
+                        </div>
+                        <div>
+                            <p class="font-extrabold text-slate-900 dark:text-white leading-tight">${houseName}</p>
+                            <p class="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-wider">Month: <span class="text-accent">${monthText}</span></p>
+                            ${bill.due_date ? `<p class="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-wider">Due: ${bill.due_date}</p>` : ''}
+                        </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="text-right">
